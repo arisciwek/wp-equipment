@@ -282,7 +282,7 @@ class EquipmentController {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
 
-            if (!current_user_can('create_equipment')) {
+            if (!current_user_can('add_equipment')) {
                 wp_send_json_error([
                     'message' => __('Insufficient permissions', 'wp-equipment')
                 ]);
