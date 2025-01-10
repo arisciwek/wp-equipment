@@ -80,7 +80,7 @@ defined('ABSPATH') || exit;
                         <option value=""><?php _e('Pilih Admin', 'wp-equipment'); ?></option>
                         <?php
                         //$users = get_users(['role__in' => ['administrator', 'editor', 'author']]);
-                        $users = get_users(['role__in' => ['Equipment']]);
+                        $users = get_users(['role__in' => ['Customer']]);
                         foreach ($users as $user) {
                             printf(
                                 '<option value="%d">%s</option>',
