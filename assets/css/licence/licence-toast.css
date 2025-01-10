@@ -1,0 +1,50 @@
+
+
+.licence-toast {
+    position: relative;
+    padding: 12px 35px 12px 15px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    min-width: 250px;
+    max-width: 400px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+
+.licence-toast-success {
+    background-color: #218838;
+}
+
+.licence-toast-error {
+    background-color: #C82333;
+}
+
+.licence-toast-warning {
+    background-color: #E0A800;
+}
+
+.licence-toast-info {
+    background-color: #138496;
+}
+
+#licence-toast-container {
+    position: fixed;
+    top: 32px;
+    right: 20px;
+    z-index: 160001; /* Sedikit lebih tinggi dari equipment toast */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 100%;
+    pointer-events: none;
+}
+
+.licence-toast p {
+    margin: 5px 0;
+    color: #fff;
+}
