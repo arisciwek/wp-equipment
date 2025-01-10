@@ -55,7 +55,7 @@
     <div class="wp-equipment-content-area">
         <div id="wp-equipment-main-container" class="wp-equipment-container">
             <!-- Left Panel -->
-            <?php require_once WP_EQUIPMENT_PATH . 'src/Views/templates/equipment-right-panel.php'; ?>
+            <?php require_once WP_EQUIPMENT_PATH . 'src/Views/templates/equipment-left-panel.php'; ?>
 
             <!-- Right Panel -->
             <div id="wp-equipment-right-panel" class="wp-equipment-right-panel hidden">
