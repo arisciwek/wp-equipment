@@ -70,7 +70,7 @@ defined('ABSPATH') || exit;
                         <select name="user_id" id="edit-user" class="regular-text">
                             <option value=""><?php _e('Pilih Admin', 'wp-equipment'); ?></option>
                             <?php
-                            $users = get_users(['role__in' => ['Equipment']]);
+                            $users = get_users(['role__in' => ['Customer']]);
                             foreach ($users as $user) {
                                 printf(
                                     '<option value="%d">%s</option>',
