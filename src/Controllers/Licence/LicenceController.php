@@ -1,9 +1,9 @@
 <?php
 /**
- * Branch Controller Class
+ * Licence Controller Class
  *
  * @package     WP_Equipment
- * @subpackage  Controllers/Branch
+ * @subpackage  Controllers/Licence
  * @version     1.0.0
  * @author      arisciwek
  *
@@ -23,16 +23,16 @@
  * - Added cache support
  */
 
-namespace WPEquipment\Controllers\Branch;
+namespace WPEquipment\Controllers\Licence;
 
-use WPEquipment\Models\Branch\LicenceModel;
-use WPEquipment\Validators\Branch\LicenceValidator;
-use WPEquipment\Cache\CacheManager;
+use WPEquipment\Models\Licence\LicenceModel;
+use WPEquipment\Validators\Licence\LicenceValidator;
+use WPEquipment\Cache\EquipmentCacheManager;
 
 class LicenceController {
     private LicenceModel $model;
     private LicenceValidator $validator;
-    private CacheManager $cache;
+    private EquipmentCacheManager $cache;
     private string $log_file;
 
     /**
@@ -43,7 +43,7 @@ class LicenceController {
     public function __construct() {
         $this->model = new LicenceModel();
         $this->validator = new LicenceValidator();
-        $this->cache = new CacheManager();
+        $this->cache = new EquipmentCacheManager();
 
         // Initialize log file inside plugin directory
         $this->log_file = WP_EQUIPMENT_PATH . self::DEFAULT_LOG_FILE;
@@ -284,7 +284,7 @@ class LicenceController {
                 return;
             }
 
-            $this->debug_log('Branch created with ID: ' . $id);
+            $this->debug_log('Licence created with ID: ' . $id);
 
             // Get fresh data for response
             $licence = $this->model->find($id);
@@ -297,7 +297,7 @@ class LicenceController {
             }
 
             wp_send_json_success([
-                'message' => __('Branch created successfully', 'wp-equipment'),
+                'message' => __('Licence created successfully', 'wp-equipment'),
                 'licence' => $licence
             ]);
 
@@ -345,7 +345,7 @@ class LicenceController {
             }
 
             wp_send_json_success([
-                'message' => __('Branch updated successfully', 'wp-equipment'),
+                'message' => __('Licence updated successfully', 'wp-equipment'),
                 'licence' => $licence
             ]);
 
@@ -365,7 +365,7 @@ class LicenceController {
 
             $licence = $this->model->find($id);
             if (!$licence) {
-                throw new \Exception('Branch not found');
+                throw new \Exception('Licence not found');
             }
 
             // Add permission check

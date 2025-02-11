@@ -12,15 +12,18 @@
 namespace WPEquipment\Controllers;
 
 use WPEquipment\Controllers\SettingsController;
+use WPEquipment\Controllers\CategoryController;
 
 class MenuManager {
     private $plugin_name;
     private $version;
+    private $category;
     private $settings_controller;
 
     public function __construct($plugin_name, $version) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
+        $this->category = $category  = new CategoryController();
         $this->settings_controller = new SettingsController();
     }
 
@@ -38,6 +41,16 @@ class MenuManager {
             [$this, 'renderMainPage'],
             'dashicons-location',
             30
+        );
+
+        // Add Categories submenu
+        add_submenu_page(
+            'wp-equipment',
+            __('Categories', 'wp-equipment'),
+            __('Categories', 'wp-equipment'),
+            'manage_options',
+            'wp-equipment-categories',
+            [$this->category, 'renderCategoriesPage']
         );
 
         add_submenu_page(

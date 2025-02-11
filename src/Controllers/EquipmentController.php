@@ -33,14 +33,14 @@
 namespace WPEquipment\Controllers;
 
 use WPEquipment\Models\EquipmentModel;
-use WPEquipment\Models\Branch\LicenceModel;
+use WPEquipment\Models\Licence\LicenceModel;
 use WPEquipment\Validators\EquipmentValidator;
-use WPEquipment\Cache\CacheManager;
+use WPEquipment\Cache\EquipmentCacheManager;
 
 class EquipmentController {
     private EquipmentModel $model;
     private EquipmentValidator $validator;
-    private CacheManager $cache;
+    private EquipmentCacheManager $cache;
     private LicenceModel $licenceModel;  // Tambahkan ini
 
     private string $log_file;
@@ -52,9 +52,9 @@ class EquipmentController {
 
     public function __construct() {
         $this->model = new EquipmentModel();
-        $this->licenceModel = new LicenceModel();  // Inisialisasi di constructor
+        $this->licenceModel = new LicenceModel();
         $this->validator = new EquipmentValidator();
-        $this->cache = new CacheManager();
+        $this->cache = new EquipmentCacheManager();
 
         // Inisialisasi log file di dalam direktori plugin
         $this->log_file = WP_EQUIPMENT_PATH . self::DEFAULT_LOG_FILE;
@@ -181,6 +181,10 @@ class EquipmentController {
         error_log($log_message, 3, $this->log_file);
     }
 
+
+    /**
+     * Handle DataTable request with caching
+     */
     public function handleDataTableRequest() {
         try {
             // Verify nonce
@@ -199,14 +203,38 @@ class EquipmentController {
             $orderDir = isset($_POST['order'][0]['dir']) ? sanitize_text_field($_POST['order'][0]['dir']) : 'asc';
 
             // Map column index to column name
-            $columns = ['code', 'name', 'owner_name', 'licence_count', 'actions']; // tambah owner_name
-
+            $columns = ['code', 'name', 'owner_name', 'licence_count', 'actions'];
             $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'code';
 
             if ($orderBy === 'actions') {
-                $orderBy = 'code'; // Default sort jika kolom actions
+                $orderBy = 'code';
             }
 
+            // Check cache first
+            $userId = get_current_user_id();
+            $cached_result = $this->cache->getDataTableCache(
+                'equipment_list',
+                $userId,
+                $start,
+                $length,
+                $search,
+                $orderBy,
+                $orderDir
+            );
+
+            if ($cached_result !== null) {
+                $response = [
+                    'draw' => $draw,
+                    'recordsTotal' => $cached_result['total'],
+                    'recordsFiltered' => $cached_result['filtered'],
+                    'data' => $cached_result['data'],
+                    'cached' => true
+                ];
+                wp_send_json($response);
+                return;
+            }
+
+            // If no cache, get from database
             try {
                 $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
 
@@ -220,7 +248,7 @@ class EquipmentController {
                         'id' => $equipment->id,
                         'code' => esc_html($equipment->code),
                         'name' => esc_html($equipment->name),
-                        'owner_name' => esc_html($equipment->owner_name ?? '-'), // tambah owner_name
+                        'owner_name' => esc_html($equipment->owner_name ?? '-'),
                         'licence_count' => intval($equipment->licence_count),
                         'actions' => $this->generateActionButtons($equipment)
                     ];
@@ -231,7 +259,24 @@ class EquipmentController {
                     'recordsTotal' => $result['total'],
                     'recordsFiltered' => $result['filtered'],
                     'data' => $data,
+                    'cached' => false
                 ];
+
+                // Save to cache
+                $this->cache->setDataTableCache(
+                    'equipment_list',
+                    $userId,
+                    $start,
+                    $length,
+                    $search,
+                    $orderBy,
+                    $orderDir,
+                    [
+                        'total' => $result['total'],
+                        'filtered' => $result['filtered'],
+                        'data' => $data
+                    ]
+                );
 
                 wp_send_json($response);
 
@@ -246,6 +291,7 @@ class EquipmentController {
             ], 400);
         }
     }
+
 
     private function generateActionButtons($equipment) {
         $actions = '';
@@ -278,6 +324,9 @@ class EquipmentController {
         return $actions;
     }
 
+    /**
+     * Store equipment with cache invalidation
+     */
     public function store() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
@@ -291,7 +340,7 @@ class EquipmentController {
 
             $current_user_id = get_current_user_id();
             
-            // Debug POST data - hanya log data yang kita perlukan
+            // Debug POST data
             $debug_post = [
                 'name' => $_POST['name'] ?? 'not set',
                 'code' => $_POST['code'] ?? 'not set',
@@ -314,10 +363,6 @@ class EquipmentController {
                 $data['user_id'] = $current_user_id;
             }
 
-            // Debug final data
-            $this->debug_log('Data to be saved:');
-            $this->debug_log($data);
-
             // Validate input
             $errors = $this->validator->validateCreate($data);
             if (!empty($errors)) {
@@ -337,6 +382,10 @@ class EquipmentController {
                 return;
             }
 
+            // Invalidate relevant caches
+            $this->cache->invalidateDataTableCache('equipment_list');
+            $this->cache->clearUserCaches($data['user_id']);
+            
             // Get fresh data for response
             $equipment = $this->model->find($id);
             if (!$equipment) {
@@ -361,6 +410,9 @@ class EquipmentController {
         }
     }
 
+    /**
+     * Update equipment with cache invalidation
+     */
     public function update() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
@@ -391,19 +443,13 @@ class EquipmentController {
                 'code' => sanitize_text_field($_POST['code'])
             ];
 
-            $this->debug_log('POST: ' . print_r($_POST, true));
-
-            // Handle user_id
+            // Handle user_id changes
+            $old_user_id = $existing_equipment->user_id;
             if (isset($_POST['user_id'])) {
                 if (current_user_can('edit_all_equipments')) {
                     $data['user_id'] = !empty($_POST['user_id']) ? intval($_POST['user_id']) : null;
-                    $this->debug_log('Setting user_id to: ' . print_r($data['user_id'], true));
-                } else {
-                    $this->debug_log('User lacks permission to change user_id');
                 }
             }
-
-            // If no edit_all_equipments capability, user_id remains unchanged
 
             // Validate input
             $errors = $this->validator->validateUpdate($data, $id);
@@ -418,6 +464,20 @@ class EquipmentController {
                 throw new \Exception('Failed to update equipment');
             }
 
+            // Clear specific equipment cache
+            $this->cache->clearEquipmentCaches($id);
+            
+            // Clear user caches if owner changed
+            if (isset($data['user_id']) && $data['user_id'] !== $old_user_id) {
+                $this->cache->clearUserCaches($old_user_id);
+                if ($data['user_id']) {
+                    $this->cache->clearUserCaches($data['user_id']);
+                }
+            }
+
+            // Invalidate DataTable cache
+            $this->cache->invalidateDataTableCache('equipment_list');
+
             // Get updated data
             $equipment = $this->model->find($id);
             if (!$equipment) {
@@ -428,7 +488,7 @@ class EquipmentController {
                 'message' => __('Equipment updated successfully', 'wp-equipment'),
                 'data' => [
                     'equipment' => $equipment,
-                    'licence_count' => $this->model->getBranchCount($id)
+                    'licence_count' => $this->model->getLicenceCount($id)
                 ]
             ]);
 
@@ -437,6 +497,9 @@ class EquipmentController {
         }
     }
 
+    /**
+     * Show equipment with caching
+     */
     public function show() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
@@ -446,6 +509,28 @@ class EquipmentController {
                 throw new \Exception('Invalid equipment ID');
             }
 
+            // Try to get from cache first
+            $cached_equipment = $this->cache->get('equipment', $id);
+            $cached_licence_count = $this->cache->get('licence_count', $id);
+
+            if ($cached_equipment !== null && $cached_licence_count !== null) {
+                // Add owner information to cached data if needed
+                if ($cached_equipment->user_id) {
+                    $user = get_userdata($cached_equipment->user_id);
+                    if ($user) {
+                        $cached_equipment->owner_name = $user->display_name;
+                    }
+                }
+
+                wp_send_json_success([
+                    'equipment' => $cached_equipment,
+                    'licence_count' => $cached_licence_count,
+                    'cached' => true
+                ]);
+                return;
+            }
+
+            // If not in cache, get from database
             $equipment = $this->model->find($id);
             if (!$equipment) {
                 throw new \Exception('Equipment not found');
@@ -457,7 +542,7 @@ class EquipmentController {
                 throw new \Exception('You do not have permission to view this equipment');
             }
 
-            // Add owner information to response
+            // Add owner information
             if ($equipment->user_id) {
                 $user = get_userdata($equipment->user_id);
                 if ($user) {
@@ -465,9 +550,17 @@ class EquipmentController {
                 }
             }
 
+            // Get licence count
+            $licence_count = $this->model->getLicenceCount($id);
+
+            // Store in cache
+            $this->cache->set('equipment', $equipment, null, $id);
+            $this->cache->set('licence_count', $licence_count, null, $id);
+
             wp_send_json_success([
                 'equipment' => $equipment,
-                'licence_count' => $this->model->getBranchCount($id)
+                'licence_count' => $licence_count,
+                'cached' => false
             ]);
 
         } catch (\Exception $e) {
@@ -475,6 +568,9 @@ class EquipmentController {
         }
     }
 
+    /**
+     * Delete equipment with cache clearing
+     */
     public function delete() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
@@ -484,19 +580,41 @@ class EquipmentController {
                 throw new \Exception('Invalid equipment ID');
             }
 
+            // Get equipment data before deletion for cache cleaning
+            $equipment = $this->model->find($id);
+            if (!$equipment) {
+                throw new \Exception('Equipment not found');
+            }
+
             // Validate delete operation
             $errors = $this->validator->validateDelete($id);
             if (!empty($errors)) {
                 throw new \Exception(reset($errors));
             }
 
+            // Store user_id for cache cleaning
+            $user_id = $equipment->user_id;
+
             // Perform delete
             if (!$this->model->delete($id)) {
                 throw new \Exception('Failed to delete equipment');
             }
 
-            // Clear cache
-            $this->cache->invalidateEquipmentCache($id);
+            // Clear all related caches
+            $this->cache->clearEquipmentCaches($id);
+            
+            // Clear user caches if equipment had an owner
+            if ($user_id) {
+                $this->cache->clearUserCaches($user_id);
+            }
+
+            // Clear related DataTable caches
+            $this->cache->invalidateDataTableCache('equipment_list');
+            $this->cache->invalidateDataTableCache('equipment_licences', ['equipment_id' => $id]);
+
+            // Clear any remaining related caches
+            $this->cache->delete('equipment_stats', $id);
+            $this->cache->delete('equipment_total_count', get_current_user_id());
 
             wp_send_json_success([
                 'message' => __('Data Peralatan berhasil dihapus', 'wp-equipment')
@@ -507,6 +625,9 @@ class EquipmentController {
         }
     }
 
+    /**
+     * Get equipment statistics with caching
+     */
     public function getStats() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
@@ -518,12 +639,31 @@ class EquipmentController {
                 return;
             }
 
+            $user_id = get_current_user_id();
+
+            // Try to get stats from cache first
+            $cached_stats = $this->cache->get('equipment_stats', $user_id);
+            if ($cached_stats !== null) {
+                wp_send_json_success([
+                    'stats' => $cached_stats,
+                    'cached' => true
+                ]);
+                return;
+            }
+
+            // If not in cache, calculate stats
             $stats = [
                 'total_equipments' => $this->model->getTotalCount(),
                 'total_licencees' => $this->licenceModel->getTotalCount()
             ];
 
-            wp_send_json_success($stats);
+            // Store in cache with default expiry
+            $this->cache->set('equipment_stats', $stats, null, $user_id);
+
+            wp_send_json_success([
+                'stats' => $stats,
+                'cached' => false
+            ]);
 
         } catch (\Exception $e) {
             wp_send_json_error([
@@ -531,6 +671,5 @@ class EquipmentController {
             ]);
         }
     }
-
 
 }

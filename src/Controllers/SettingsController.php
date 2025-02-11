@@ -27,6 +27,127 @@ namespace WPEquipment\Controllers;
 class SettingsController {
     public function init() {
         add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_init', [$this, 'register_development_settings']);
+        
+        // Register AJAX handlers with correct action names
+        // Handled in CategoryController.php
+        add_action('wp_ajax_generate_demo_categories', [$this, 'handle_generate_demo_categories']);
+
+        // Handled in SettingsController.php
+        add_action('wp_ajax_check_demo_data', [$this, 'handle_check_demo_data']);
+    }
+
+    /**
+     * Get the appropriate generator class based on data type
+     */
+    private function getGeneratorClass($type) {
+        switch ($type) {
+            case 'category':
+                return new \WPEquipment\Database\Demo\CategoryDemoData();
+            // Add other types as needed
+            default:
+                throw new \Exception('Invalid demo data type: ' . $type);
+        }
+    }
+
+    /**
+     * Handle demo data generation
+     */
+    public function handle_generate_demo_data() {
+        try {
+            // Validate permissions first
+            if (!current_user_can('manage_options')) {
+                throw new \Exception('Permission denied');
+            }
+
+            $type = sanitize_text_field($_POST['type']);
+            $nonce = sanitize_text_field($_POST['nonce']);
+
+            if (!wp_verify_nonce($nonce, "generate_demo_{$type}")) {
+                throw new \Exception('Invalid security token');
+            }
+
+            // Check if development mode is enabled
+            $dev_settings = get_option('wp_equipment_development_settings', []);
+            if (empty($dev_settings['enable_development'])) {
+                wp_send_json_error([
+                    'message' => 'Development mode is not enabled. Please enable it in settings first.',
+                    'type' => 'dev_mode_off'
+                ]);
+                return;
+            }
+
+            // Get the generator class
+            $generator = $this->getGeneratorClass($type);
+            
+            // Run the generator
+            if ($generator->run()) {
+                // Clear relevant caches
+                $cache = new \WPEquipment\Cache\EquipmentCacheManager();
+                $cache->invalidateDataTableCache('category_list');
+                $cache->delete('category_tree');
+
+                wp_send_json_success([
+                    'message' => ucfirst($type) . ' data generated successfully.',
+                    'type' => 'success'
+                ]);
+            } else {
+                wp_send_json_error([
+                    'message' => 'Failed to generate demo data.',
+                    'type' => 'error'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            error_log('Demo data generation failed: ' . $e->getMessage());
+            wp_send_json_error([
+                'message' => $e->getMessage(),
+                'type' => 'error'
+            ]);
+        }
+    }
+
+    /**
+     * Check demo data existence
+     */
+    public function handle_check_demo_data() {
+        try {
+            if (!current_user_can('manage_options')) {
+                throw new \Exception('Permission denied');
+            }
+
+            $type = sanitize_text_field($_POST['type']);
+            $nonce = sanitize_text_field($_POST['nonce']);
+
+            if (!wp_verify_nonce($nonce, "check_demo_{$type}")) {
+                throw new \Exception('Invalid security token');
+            }
+
+            // Get development mode status
+            $dev_settings = get_option('wp_equipment_development_settings', []);
+            $dev_mode_enabled = !empty($dev_settings['enable_development']);
+
+            // Check data existence based on type
+            global $wpdb;
+            switch ($type) {
+                case 'category':
+                    $count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}app_categories");
+                    break;
+                default:
+                    $count = 0;
+            }
+
+            wp_send_json_success([
+                'has_data' => ($count > 0),
+                'count' => $count,
+                'dev_mode' => $dev_mode_enabled
+            ]);
+
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     public function register_settings() {
@@ -49,34 +170,6 @@ class SettingsController {
             )
         );
 
-        // Membership Settings
-        register_setting(
-            'wp_equipment_membership_settings',
-            'wp_equipment_membership_settings',
-            array(
-                'sanitize_callback' => [$this, 'sanitize_membership_settings'],
-                'default' => array(
-                    'regular_max_staff' => 2,
-                    'priority_max_staff' => 5,
-                    'utama_max_staff' => -1,
-                    'regular_capabilities' => array(
-                        'can_add_staff' => true,
-                        'max_departments' => 1
-                    ),
-                    'priority_capabilities' => array(
-                        'can_add_staff' => true,
-                        'can_export' => true,
-                        'max_departments' => 3
-                    ),
-                    'utama_capabilities' => array(
-                        'can_add_staff' => true,
-                        'can_export' => true,
-                        'can_bulk_import' => true,
-                        'max_departments' => -1
-                    )
-                )
-            )
-        );
     }
 
     public function sanitize_settings($input) {
@@ -96,32 +189,24 @@ class SettingsController {
 
         return $sanitized;
     }
+    public function register_development_settings() {
+        register_setting(
+            'wp_equipment_development_settings',
+            'wp_equipment_development_settings',
+            array(
+                'sanitize_callback' => [$this, 'sanitize_development_settings'],
+                'default' => array(
+                    'enable_development' => 0,
+                    'clear_data_on_deactivate' => 0
+                )
+            )
+        );
+    }
 
-    public function sanitize_membership_settings($input) {
+    public function sanitize_development_settings($input) {
         $sanitized = array();
-        
-        // Sanitize staff limits
-        $levels = ['regular', 'priority', 'utama'];
-        foreach ($levels as $level) {
-            $max_staff_key = "{$level}_max_staff";
-            $sanitized[$max_staff_key] = intval($input[$max_staff_key]);
-            
-            // Validate max staff value
-            if ($sanitized[$max_staff_key] != -1 && $sanitized[$max_staff_key] < 1) {
-                $sanitized[$max_staff_key] = 1;
-            }
-            
-            // Sanitize capabilities
-            $capabilities_key = "{$level}_capabilities";
-            $sanitized[$capabilities_key] = array();
-            
-            if (isset($input[$capabilities_key]) && is_array($input[$capabilities_key])) {
-                foreach ($input[$capabilities_key] as $cap => $value) {
-                    $sanitized[$capabilities_key][$cap] = (bool) $value;
-                }
-            }
-        }
-
+        $sanitized['enable_development'] = isset($input['enable_development']) ? 1 : 0;
+        $sanitized['clear_data_on_deactivate'] = isset($input['clear_data_on_deactivate']) ? 1 : 0;
         return $sanitized;
     }
 
@@ -141,7 +226,7 @@ class SettingsController {
         $allowed_tabs = [
             'general' => 'tab-general.php',
             'permissions' => 'tab-permissions.php',
-            'membership' => 'tab-membership.php'
+            'demo-data' => 'tab-demo-data.php'
         ];
         
         // Validate tab exists
@@ -161,49 +246,4 @@ class SettingsController {
         }
     }
 
-    // Render functions for membership fields
-    public function render_membership_section() {
-        echo '<p>' . __('Konfigurasi level keanggotaan dan batasan untuk setiap level.', 'wp-equipment') . '</p>';
-    }
-
-    public function render_max_staff_field($level) {
-        $options = get_option('wp_equipment_membership_settings');
-        $field_name = "{$level}_max_staff";
-        $value = isset($options[$field_name]) ? $options[$field_name] : 2;
-        ?>
-        <input type="number" 
-               name="wp_equipment_membership_settings[<?php echo esc_attr($field_name); ?>]"
-               value="<?php echo esc_attr($value); ?>"
-               min="-1"
-               class="small-text">
-        <p class="description">
-            <?php _e('-1 untuk unlimited', 'wp-equipment'); ?>
-        </p>
-        <?php
-    }
-
-    public function render_capabilities_field($level) {
-        $options = get_option('wp_equipment_membership_settings');
-        $field_name = "{$level}_capabilities";
-        $capabilities = isset($options[$field_name]) ? $options[$field_name] : array();
-        
-        $available_caps = array(
-            'can_add_staff' => __('Dapat menambah staff', 'wp-equipment'),
-            'can_export' => __('Dapat export data', 'wp-equipment'),
-            'can_bulk_import' => __('Dapat bulk import', 'wp-equipment')
-        );
-
-        foreach ($available_caps as $cap => $label) {
-            $checked = isset($capabilities[$cap]) ? $capabilities[$cap] : false;
-            ?>
-            <label>
-                <input type="checkbox" 
-                       name="wp_equipment_membership_settings[<?php echo esc_attr($field_name); ?>][<?php echo esc_attr($cap); ?>]"
-                       value="1"
-                       <?php checked($checked, true); ?>>
-                <?php echo esc_html($label); ?>
-            </label><br>
-            <?php
-        }
-    }
 }
