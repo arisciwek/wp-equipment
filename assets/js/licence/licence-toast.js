@@ -1,5 +1,5 @@
 /**
- * Branch Toast Component
+ * Licence Toast Component
  *
  * @package     WP_Equipment
  * @subpackage  Assets/JS/Branch
@@ -12,7 +12,7 @@
  *              Support queue system untuk multiple notifications.
  *              Includes custom styling dan animations.
  */
- const BranchToast = {
+ const LicenceToast = {
      container: null,
      queue: [],
      isProcessing: false,
@@ -175,7 +175,7 @@
          this.show(message, 'info', duration);
      },
 
-     // Branch-specific message methods
+     // Licence-specific message methods
      showValidationErrors(errors) {
          if (typeof errors === 'string') {
              this.error(errors);
@@ -217,4 +217,4 @@
  };
 
  // Expose for global use
- window.BranchToast = BranchToast;
+ window.BranchToast = LicenceToast;

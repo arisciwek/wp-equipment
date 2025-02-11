@@ -104,7 +104,7 @@ A comprehensive WordPress plugin for managing Equipmentn administrative regions 
    - 🗑️ Delete entries
 4. Right panel shows detailed information
 
-### Branch Management
+### Licence Management
 1. Select a equipment to view its licencees
 2. Use the licence tab in the right panel
 3. Manage licencees with similar actions:
@@ -140,13 +140,13 @@ wp-equipment/
 
 #### Models
 - EquipmentModel: Equipment data management
-- LicenceModel: Branch data operations
+- LicenceModel: Licence data operations
 - PermissionModel: Access control
 - SettingsModel: Configuration storage
 
 #### JavaScript Components
 - Equipment management
-- Branch management
+- Licence management
 - DataTables integration
 - Form validation
 - Toast notifications

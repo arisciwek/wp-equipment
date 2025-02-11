@@ -1,5 +1,5 @@
 /**
- * Branch DataTable Handler
+ * Licence DataTable Handler
  *
  * @package     WP_Equipment
  * @subpackage  Assets/JS/Branch
@@ -26,7 +26,7 @@
  */
 
  /**
-  * Branch DataTable Handler - Fixed Implementation
+  * Licence DataTable Handler - Fixed Implementation
   */
  (function($) {
      'use strict';
@@ -88,7 +88,7 @@
 
              if (typeof WIModal === 'undefined') {
                  console.error('WIModal is not defined');
-                 BranchToast.error('Error: Modal component not found');
+                 LicenceToast.error('Error: Modal component not found');
                  return;
              }
 
@@ -113,15 +113,15 @@
                          });
 
                          if (response.success) {
-                             BranchToast.success('Pertama/berkala berhasil dihapus');
+                             LicenceToast.success('Pertama/berkala berhasil dihapus');
                              this.refresh();
                              $(document).trigger('licence:deleted', [id]);
                          } else {
-                             BranchToast.error(response.data?.message || 'Gagal menghapus surat keterangan');
+                             LicenceToast.error(response.data?.message || 'Gagal menghapus surat keterangan');
                          }
                      } catch (error) {
                          console.error('Delete licence error:', error);
-                         BranchToast.error('Gagal menghubungi server');
+                         LicenceToast.error('Gagal menghubungi server');
                      }
                  }
              });

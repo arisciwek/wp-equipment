@@ -52,20 +52,22 @@ class WP_Equipment_Dependencies {
                 case 'general':
                     wp_enqueue_style('wp-equipment-general-tab', WP_EQUIPMENT_URL . 'assets/css/settings/general-tab-style.css', [], $this->version);
                     break;
-                // Tambahkan case untuk membership
-                case 'membership':
-                    wp_enqueue_style('wp-equipment-membership-tab', WP_EQUIPMENT_URL . 'assets/css/settings/membership-tab-style.css', [], $this->version);
+                case 'category':
+                    wp_enqueue_style('wp-equipment-category-tab', WP_EQUIPMENT_URL . 'assets/css/settings/category-tab-style.css', [], $this->version);
+                    break;
+                case 'demo-data':
+                    wp_enqueue_style('wp-equipment-demo-data-tab', WP_EQUIPMENT_URL . 'assets/css/settings/demo-data-tab-style.css', [], $this->version);
                     break;
             }
             return;
         }
 
-        // Equipment and Branch pages styles
+        // Equipment and Licence pages styles
         if ($screen->id === 'toplevel_page_wp-equipment') {
             // Core styles
             wp_enqueue_style('wp-equipment-toast', WP_EQUIPMENT_URL . 'assets/css/components/toast.css', [], $this->version);
             wp_enqueue_style('wp-equipment-modal', WP_EQUIPMENT_URL . 'assets/css/components/confirmation-modal.css', [], $this->version);
-            // Branch toast - terpisah
+            // Licence toast - terpisah
             wp_enqueue_style('licence-toast', WP_EQUIPMENT_URL . 'assets/css/licence/licence-toast.css', [], $this->version);
 
             // DataTables
@@ -75,9 +77,19 @@ class WP_Equipment_Dependencies {
             wp_enqueue_style('wp-equipment-equipment', WP_EQUIPMENT_URL . 'assets/css/equipment.css', [], $this->version);
             wp_enqueue_style('wp-equipment-equipment-form', WP_EQUIPMENT_URL . 'assets/css/equipment-form.css', [], $this->version);
 
-            // Branch styles
+            // Licence styles
             wp_enqueue_style('wp-equipment-licence', WP_EQUIPMENT_URL . 'assets/css/licence/licence.css', [], $this->version);
         }
+
+        // In Equipment and Category pages styles
+        if ($screen->id === 'toplevel_page_wp-equipment' || $screen->id === 'wp-equipment_page_wp-equipment-categories') {
+            // Core styles - existing code...
+            
+            // Category styles
+            wp_enqueue_style('wp-equipment-category', WP_EQUIPMENT_URL . 'assets/css/category/category-style.css', [], $this->version);
+            wp_enqueue_style('wp-equipment-category-form', WP_EQUIPMENT_URL . 'assets/css/category/category-form.css', [], $this->version);
+        }
+
     }
 
     public function enqueue_scripts() {
@@ -98,16 +110,15 @@ class WP_Equipment_Dependencies {
                 case 'general':
                     wp_enqueue_style('wp-equipment-general-tab', WP_EQUIPMENT_URL . 'assets/js/settings/general-tab-script.js', [], $this->version);
                     break;
-                // Tambahkan case untuk membership
-                case 'membership':
-                    wp_enqueue_style('wp-equipment-membership-tab', WP_EQUIPMENT_URL . 'assets/js/settings/membership-tab-script.js', [], $this->version);
+                case 'demo-data':
+                    wp_enqueue_script('wp-equipment-demo-data-tab', WP_EQUIPMENT_URL . 'assets/js/settings/demo-data-tab-script.js', ['jquery'], $this->version);
                     break;
             }
             return;
 
         }
 
-        // Equipment and Branch pages scripts
+        // Equipment and Licence pages scripts
         if ($screen->id === 'toplevel_page_wp-equipment') {
             // Core dependencies
             wp_enqueue_script('jquery-validate', 'https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js', ['jquery'], '1.19.5', true);
@@ -116,7 +127,7 @@ class WP_Equipment_Dependencies {
             // Components
             wp_enqueue_script('equipment-toast', WP_EQUIPMENT_URL . 'assets/js/components/equipment-toast.js', ['jquery'], $this->version, true);
             wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
-            // Branch toast
+            // Licence toast
             wp_enqueue_script('licence-toast', WP_EQUIPMENT_URL . 'assets/js/licence/licence-toast.js', ['jquery'], $this->version, true);
 
             // Equipment scripts - path fixed according to tree.md
@@ -146,14 +157,24 @@ class WP_Equipment_Dependencies {
             ]);
 
 
-            // Branch scripts
+            // Licence scripts
             wp_enqueue_script('licence-datatable', WP_EQUIPMENT_URL . 'assets/js/licence/licence-datatable.js', ['jquery', 'datatables', 'equipment-toast', 'equipment'], $this->version, true);
             wp_enqueue_script('licence-toast', WP_EQUIPMENT_URL . 'assets/js/licence/licence-toast.js', ['jquery'], $this->version, true);
             // Update dependencies untuk form
             wp_enqueue_script('create-licence-form', WP_EQUIPMENT_URL . 'assets/js/licence/create-licence-form.js', ['jquery', 'jquery-validate', 'licence-toast', 'licence-datatable'], $this->version, true);
             wp_enqueue_script('edit-licence-form', WP_EQUIPMENT_URL . 'assets/js/licence/edit-licence-form.js', ['jquery', 'jquery-validate', 'licence-toast', 'licence-datatable'], $this->version, true);
-
         }
+
+        // In Equipment and Category pages scripts
+        if ($screen->id === 'toplevel_page_wp-equipment' || $screen->id === 'wp-equipment_page_wp-equipment-categories') {
+            // Existing code...
+            
+            // Category scripts
+            wp_enqueue_script('category-datatable', WP_EQUIPMENT_URL . 'assets/js/category/category-datatable.js', ['jquery', 'datatables', 'category-toast'], $this->version, true);
+            wp_enqueue_script('category-form', WP_EQUIPMENT_URL . 'assets/js/category/category-form.js', ['jquery', 'jquery-validate', 'category-toast'], $this->version, true);
+            wp_enqueue_script('category', WP_EQUIPMENT_URL . 'assets/js/category/category-script.js', ['jquery', 'category-toast', 'category-datatable', 'category-form'], $this->version, true);
+        }
+
     }
 
     public function enqueue_select_handler() {
@@ -174,7 +195,7 @@ class WP_Equipment_Dependencies {
             'nonce' => wp_create_nonce('wp_equipment_nonce'),
             'texts' => [
                 'select_equipment' => __('Pilih Equipment', 'wp-equipment'),
-                'select_licence' => __('Pilih Cabang', 'wp-equipment'),
+                'select_licence' => __('Pilih Licence', 'wp-equipment'),
                 'loading' => __('Memuat...', 'wp-equipment')
             ]
         ]);

@@ -1,5 +1,5 @@
 /**
- * Create Branch Form Handler
+ * Create Licence Form Handler
  *
  * @package     WP_Equipment
  * @subpackage  Assets/JS/Branch
@@ -16,7 +16,7 @@
  * Dependencies:
  * - jQuery
  * - jQuery Validation
- * - BranchToast for notifications
+ * - LicenceToast for notifications
  * - WIModal for confirmations
  *
  * Last modified: 2024-12-10
@@ -50,7 +50,7 @@
                 if (equipmentId) {
                     this.showModal(equipmentId);
                 } else {
-                    BranchToast.error('Silakan pilih equipment terlebih dahulu');
+                    LicenceToast.error('Silakan pilih equipment terlebih dahulu');
                 }
             });
 
@@ -68,7 +68,7 @@
 
         showModal(equipmentId) {
             if (!equipmentId) {
-                BranchToast.error('ID Equipment tidak valid');
+                LicenceToast.error('ID Equipment tidak valid');
                 return;
             }
 
@@ -190,7 +190,7 @@
                 });
 
                 if (response.success) {
-                    BranchToast.success('Surat Keterangan berhasil ditambahkan');
+                    LicenceToast.success('Surat Keterangan berhasil ditambahkan');
                     this.hideModal();
 
                     $(document).trigger('licence:created', [response.data]);
@@ -199,11 +199,11 @@
                         window.LicenceDataTable.refresh();
                     }
                 } else {
-                    BranchToast.error(response.data?.message || 'Gagal menambah surat keterangan');
+                    LicenceToast.error(response.data?.message || 'Gagal menambah surat keterangan');
                 }
             } catch (error) {
                 console.error('Create licence error:', error);
-                BranchToast.error('Gagal menghubungi server. Silakan coba lagi.');
+                LicenceToast.error('Gagal menghubungi server. Silakan coba lagi.');
             } finally {
                 this.setLoadingState(false);
             }
