@@ -1,0 +1,34 @@
+/**
+ * Demo Data Tab Styles
+ *
+ * @package     WP_Equipment
+ * @subpackage  Assets/CSS/Settings
+ * @version     1.0.0
+ * @author      arisciwek
+ *
+ * Path: /wp-equipment/assets/css/settings/demo-data-tab-style.css
+ *
+ * Description: Styles for the demo data generation tab in settings
+ */
+
+.demo-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.demo-data-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    padding: 15px;
+    border-radius: 3px;
+}
+
+.demo-data-card h4 {
+    margin-top: 0;
+}
+
+.demo-data-card p {
+    margin-bottom: 15px;
+}
