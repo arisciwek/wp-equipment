@@ -54,8 +54,47 @@ class CategoryController {
         add_action('wp_ajax_get_category_tree', [$this, 'getCategoryTree']);
 
         add_action('wp_ajax_generate_demo_categories', [$this, 'generateDemoDataCategories']);
+	    add_action('wp_ajax_get_category_stats', [$this, 'getCategoryStats']);
+
     }
 
+	public function getCategoryStats() {
+		global $wpdb;
+	    try {
+	        check_ajax_referer('wp_equipment_nonce', 'nonce');
+
+	        if (!current_user_can('manage_options')) {
+	            throw new \Exception('Insufficient permissions');
+	        }
+
+	        // Get total count
+	        $total = $this->model->getTotalCount();
+
+	        // Get recently added categories (last 5)
+	        $recent = $wpdb->get_results(
+	            "SELECT id, code, name, created_at 
+	             FROM {$wpdb->prefix}app_categories 
+	             ORDER BY created_at DESC 
+	             LIMIT 5"
+	        );
+
+	        if ($recent) {
+	            foreach ($recent as &$item) {
+	                $item->created_at = mysql2date('Y-m-d H:i:s', $item->created_at);
+	            }
+	        }
+
+	        wp_send_json_success([
+	            'total' => $total,
+	            'recentlyAdded' => $recent
+	        ]);
+
+	    } catch (\Exception $e) {
+	        wp_send_json_error([
+	            'message' => $e->getMessage()
+	        ]);
+	    }
+	}
     /**
      * Initialize log directory if it doesn't exist
      */
@@ -101,143 +140,111 @@ class CategoryController {
         error_log($log_message, 3, $this->log_file);
     }
 
-    /**
-     * Handle DataTable request with caching
-     */
-    public function handleDataTableRequest() {
-        try {
-            check_ajax_referer('wp_equipment_nonce', 'nonce');
+	public function handleDataTableRequest() {
+	    try {
+	        check_ajax_referer('wp_equipment_nonce', 'nonce');
 
-            if (!current_user_can('manage_options')) {
-                throw new \Exception('Insufficient permissions');
-            }
+	        if (!current_user_can('manage_options')) {
+	            throw new \Exception('Insufficient permissions');
+	        }
 
-            $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
-            $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
-            $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-            $search = isset($_POST['search']['value']) ? sanitize_text_field($_POST['search']['value']) : '';
+	        $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
+	        $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
+	        $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
+	        $search = isset($_POST['search']['value']) ? sanitize_text_field($_POST['search']['value']) : '';
 
-            $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
-            $orderDir = isset($_POST['order'][0]['dir']) ? sanitize_text_field($_POST['order'][0]['dir']) : 'asc';
+	        $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
+	        $orderDir = isset($_POST['order'][0]['dir']) ? sanitize_text_field($_POST['order'][0]['dir']) : 'asc';
 
-            $columns = ['code', 'name', 'level', 'parent_name', 'unit', 'price', 'actions'];
-            $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'code';
+	        $columns = ['code', 'name', 'level', 'parent_name', 'unit', 'price', 'actions'];
+	        $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'code';
 
-            if ($orderBy === 'actions') {
-                $orderBy = 'code';
-            }
+	        if ($orderBy === 'actions') {
+	            $orderBy = 'code';
+	        }
 
-            // Check cache
-            $userId = get_current_user_id();
-            $cached_result = $this->cache->getDataTableCache(
-                'category_list',
-                $userId,
-                $start,
-                $length,
-                $search,
-                $orderBy,
-                $orderDir
-            );
+	        try {
+	            $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
 
-            if ($cached_result !== null) {
-                $response = [
-                    'draw' => $draw,
-                    'recordsTotal' => $cached_result['total'],
-                    'recordsFiltered' => $cached_result['filtered'],
-                    'data' => $cached_result['data'],
-                    'cached' => true
-                ];
-                wp_send_json($response);
-                return;
-            }
+	            if (!$result) {
+	                throw new \Exception('No data returned from model');
+	            }
 
-            // Get from database if not cached
-            try {
-                $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
+	            // Pastikan data selalu array
+	            $data = [];
+	            if (!empty($result['data'])) {
+	                foreach ($result['data'] as $category) {
+	                    $data[] = [
+	                        'id' => $category->id,
+	                        'code' => esc_html($category->code),
+	                        'name' => esc_html($category->name),
+	                        'level' => intval($category->level),
+	                        'parent_name' => $category->parent_name ? esc_html($category->parent_name) : '-',
+	                        'unit' => $category->unit ? esc_html($category->unit) : '-',
+	                        'price' => $category->price ? number_format($category->price, 2) : '-',
+	                        'actions' => $this->generateActionButtons($category)
+	                    ];
+	                }
+	            }
 
-                if (!$result) {
-                    throw new \Exception('No data returned from model');
-                }
+	            // Format response sesuai spesifikasi DataTables
+	            $response = [
+	                'draw' => $draw,
+	                'recordsTotal' => intval($result['total']),
+	                'recordsFiltered' => intval($result['filtered']),
+	                'data' => $data
+	            ];
 
-                $data = [];
-                foreach ($result['data'] as $category) {
-                    $data[] = [
-                        'id' => $category->id,
-                        'code' => esc_html($category->code),
-                        'name' => esc_html($category->name),
-                        'level' => intval($category->level),
-                        'parent_name' => $category->parent_name ? esc_html($category->parent_name) : '-',
-                        'unit' => $category->unit ? esc_html($category->unit) : '-',
-                        'price' => $category->price ? number_format($category->price, 2) : '-',
-                        'actions' => $this->generateActionButtons($category)
-                    ];
-                }
+	            // Debug log response
+	            error_log('DataTable Response: ' . print_r($response, true));
 
-                $response = [
-                    'draw' => $draw,
-                    'recordsTotal' => $result['total'],
-                    'recordsFiltered' => $result['filtered'],
-                    'data' => $data,
-                    'cached' => false
-                ];
+	            wp_send_json($response);
+	            return;
 
-                // Save to cache
-                $this->cache->setDataTableCache(
-                    'category_list',
-                    $userId,
-                    $start,
-                    $length,
-                    $search,
-                    $orderBy,
-                    $orderDir,
-                    [
-                        'total' => $result['total'],
-                        'filtered' => $result['filtered'],
-                        'data' => $data
-                    ]
-                );
+	        } catch (\Exception $e) {
+	            error_log('DataTable Error: ' . $e->getMessage());
+	            throw new \Exception('Database error: ' . $e->getMessage());
+	        }
 
-                wp_send_json($response);
+	    } catch (\Exception $e) {
+	        error_log('Ajax Handler Error: ' . $e->getMessage());
+	        wp_send_json_error([
+	            'message' => $e->getMessage(),
+	            'code' => $e->getCode()
+	        ]);
+	    }
+	}
 
-            } catch (\Exception $e) {
-                throw new \Exception('Database error: ' . $e->getMessage());
-            }
+	private function generateActionButtons($category) {
+	    if (!current_user_can('manage_options')) {
+	        return '';
+	    }
 
-        } catch (\Exception $e) {
-            wp_send_json_error([
-                'message' => $e->getMessage(),
-                'code' => $e->getCode()
-            ], 400);
-        }
-    }
+	    $actions = '';
+	    
+	    $actions .= sprintf(
+	        '<button type="button" class="button view-category" data-id="%d" title="%s"><i class="dashicons dashicons-visibility"></i></button> ',
+	        $category->id,
+	        __('View', 'wp-equipment')
+	    );
 
-    private function generateActionButtons($category) {
-        $actions = '';
+	    $actions .= sprintf(
+	        '<button type="button" class="button edit-category" data-id="%d" title="%s"><i class="dashicons dashicons-edit"></i></button> ',
+	        $category->id,
+	        __('Edit', 'wp-equipment')
+	    );
 
-        if (current_user_can('manage_options')) {
-            $actions .= sprintf(
-                '<button type="button" class="button view-category" data-id="%d" title="%s"><i class="dashicons dashicons-visibility"></i></button> ',
-                $category->id,
-                __('Lihat', 'wp-equipment')
-            );
+	    if (!$this->model->hasChildren($category->id)) {
+	        $actions .= sprintf(
+	            '<button type="button" class="button delete-category" data-id="%d" title="%s"><i class="dashicons dashicons-trash"></i></button>',
+	            $category->id,
+	            __('Delete', 'wp-equipment')
+	        );
+	    }
 
-            $actions .= sprintf(
-                '<button type="button" class="button edit-category" data-id="%d" title="%s"><i class="dashicons dashicons-edit"></i></button> ',
-                $category->id,
-                __('Edit', 'wp-equipment')
-            );
+	    return $actions;
+	}
 
-            if (!$this->model->hasChildren($category->id)) {
-                $actions .= sprintf(
-                    '<button type="button" class="button delete-category" data-id="%d" title="%s"><i class="dashicons dashicons-trash"></i></button>',
-                    $category->id,
-                    __('Hapus', 'wp-equipment')
-                );
-            }
-        }
-
-        return $actions;
-    }
 
 	public function store() {
 	   try {

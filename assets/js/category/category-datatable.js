@@ -17,6 +17,11 @@
        currentRow: null,
 
        init() {
+            if (typeof EquipmentToast === 'undefined') {
+                console.error('Required dependency not found: EquipmentToast');
+                return;
+            }
+
            this.initDataTable();
            this.bindEvents();
        },

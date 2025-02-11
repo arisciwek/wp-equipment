@@ -163,6 +163,17 @@ class CategoryModel {
     public function getDataTableData(int $start, int $length, string $search, string $orderColumn, string $orderDir): array {
         global $wpdb;
 
+        // Debug info
+        error_log("=== Start Category Model Query ===");
+        error_log("Parameters received:");
+        error_log(print_r([
+            'start' => $start,
+            'length' => $length,
+            'search' => $search,
+            'orderColumn' => $orderColumn,
+            'orderDir' => $orderDir
+        ], true));
+
         // Base query parts
         $select = "SELECT SQL_CALC_FOUND_ROWS c.*, 
                          p.name as parent_name,
@@ -206,25 +217,39 @@ class CategoryModel {
 
         // Complete query
         $sql = $select . $from . $join . $where . $order . $limit;
+        
+        error_log("Generated SQL Query:");
+        error_log($sql);
 
         // Get paginated results
         $results = $wpdb->get_results($sql);
         
         if ($results === null) {
+            error_log("Query error: " . $wpdb->last_error);
             throw new \Exception($wpdb->last_error);
         }
 
+        error_log("Query results count: " . count($results));
+
         // Get total filtered count
         $filtered = $wpdb->get_var("SELECT FOUND_ROWS()");
+        error_log("Filtered count: " . $filtered);
 
         // Get total count
         $total = $wpdb->get_var("SELECT COUNT(DISTINCT id) FROM {$this->table}");
+        error_log("Total count: " . $total);
 
-        return [
+        $return = [
             'data' => $results,
             'total' => (int) $total,
             'filtered' => (int) $filtered
         ];
+
+        error_log("Returning data:");
+        error_log(print_r($return, true));
+        error_log("=== End Category Model Query ===");
+
+        return $return;
     }
 
     public function delete(int $id): bool {

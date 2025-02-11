@@ -1,0 +1,271 @@
+/**
+ * DataTable Category Styles - Part 1: Layout & Container
+ *
+ * @package     WP_Equipment
+ * @subpackage  Assets/CSS/Category
+ * @version     1.0.0
+ * @author      arisciwek
+ *
+ * Path: /wp-equipment/assets/css/category/datatable-category.css
+ */
+
+/* DataTable Container & Wrapper */
+.dataTables_wrapper {
+    position: relative;
+    clear: both;
+    margin: 20px 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 20px;
+}
+
+/* Top Controls Layout */
+.dataTables_wrapper .top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Length & Filter Controls */
+.dataTables_length {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.dataTables_length select {
+    min-width: 80px;
+    padding: 6px 30px 6px 10px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #fff url('data:image/svg+xml;utf8,<svg fill="%23555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 5px center;
+    background-size: 16px;
+    appearance: none;
+    font-size: 13px;
+}
+
+.dataTables_filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dataTables_filter input[type="search"] {
+    min-width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.dataTables_filter input[type="search"]:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/**
+ *  Table Styling
+ *
+ */
+
+/* Table Structure */
+#categories-table {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 15px 0;
+}
+
+/* Table Header */
+#categories-table thead th {
+    background-color: #f0f0f1;
+    border-bottom: 2px solid #c3c4c7;
+    color: #1d2327;
+    font-weight: 600;
+    padding: 12px 15px;
+    text-align: left;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#categories-table thead th:hover {
+    background-color: #e5e5e5;
+}
+
+/* Sorting Icons */
+#categories-table thead th.sorting:after,
+#categories-table thead th.sorting_asc:after,
+#categories-table thead th.sorting_desc:after {
+    position: absolute;
+    right: 8px;
+    font-family: dashicons;
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+#categories-table thead th.sorting:after {
+    content: "\f156";
+    opacity: 0.2;
+}
+
+#categories-table thead th.sorting_asc:after {
+    content: "\f142";
+}
+
+#categories-table thead th.sorting_desc:after {
+    content: "\f140";
+}
+
+/* Table Body */
+#categories-table tbody tr {
+    background-color: #fff;
+    transition: background-color 0.2s ease;
+}
+
+#categories-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#categories-table tbody tr:hover {
+    background-color: #f0f6fc;
+}
+
+#categories-table tbody td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #50575e;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+/* Action Buttons Column */
+#categories-table .column-actions {
+    text-align: right;
+    white-space: nowrap;
+    width: 120px;
+}
+
+/* Price Column */
+#categories-table .column-price {
+    text-align: right;
+    font-family: monospace;
+}
+
+/**
+ * Responsive & Interactive
+ *
+ */
+
+/* Pagination */
+.dataTables_paginate {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 6px 12px;
+    margin: 0 2px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #2271b1;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background: #f0f0f1;
+    border-color: #c3c4c7;
+    color: #135e96;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    font-weight: 500;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Info Display */
+.dataTables_info {
+    margin-top: 15px;
+    color: #646970;
+    font-size: 13px;
+}
+
+/* Loading State */
+.dataTables_processing {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 782px) {
+    .dataTables_wrapper .top-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dataTables_filter input[type="search"] {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .dataTables_length {
+        justify-content: flex-start;
+    }
+
+    #categories-table td:before {
+        content: attr(data-title);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .dataTables_paginate {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+/* Empty Table State */
+.dataTables_empty {
+    text-align: center;
+    padding: 40px 20px !important;
+    color: #646970;
+    font-style: italic;
+    background: #f8f9fa !important;
+}
+
+/* Row Selection & Highlight */
+#categories-table tbody tr.selected {
+    background-color: #e8f0fe !important;
+}
+
+#categories-table tbody tr.highlight {
+    background-color: #fef8e3 !important;
+    transition: background-color 0.3s ease;
+}

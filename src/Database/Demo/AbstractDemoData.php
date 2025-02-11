@@ -48,11 +48,21 @@ abstract class AbstractDemoData {
     protected $equipmentModel;
     protected $licenceModel;
     protected EquipmentCacheManager $cache;
+    protected $debug_mode = false;
 
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
-
+        
+        // Initialize debug mode from WordPress settings
+        $settings = get_option('wp_equipment_settings', []);
+        $this->debug_mode = !empty($settings['enable_debug']);
+        
+        // Also check WP_DEBUG constant
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $this->debug_mode = true;
+        }
+        
         // Initialize cache manager immediately since it doesn't require plugins_loaded
         $this->cache = new EquipmentCacheManager();
         
@@ -152,3 +162,4 @@ abstract class AbstractDemoData {
     }
 
 }
+        

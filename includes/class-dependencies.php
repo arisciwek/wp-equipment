@@ -36,6 +36,7 @@ class WP_Equipment_Dependencies {
 
     public function enqueue_styles() {
         $screen = get_current_screen();
+        error_log('get_current_screen =category ' . $screen->id);
         if (!$screen) return;
 
         // Settings page styles
@@ -90,10 +91,41 @@ class WP_Equipment_Dependencies {
             wp_enqueue_style('wp-equipment-category-form', WP_EQUIPMENT_URL . 'assets/css/category/category-form.css', [], $this->version);
         }
 
+    // In Equipment and Category pages styles
+    if ($screen->id === 'wp-equipment_page_wp-equipment-categories') {
+        // Core DataTables CSS
+        wp_enqueue_style('datatables', 'https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css', [], '1.13.7');
+        
+        // Category styles
+        wp_enqueue_style('wp-equipment-category', 
+            WP_EQUIPMENT_URL . 'assets/css/category/category-style.css', 
+            [], 
+            $this->version
+        );
+        
+        wp_enqueue_style('wp-equipment-category-form', 
+            WP_EQUIPMENT_URL . 'assets/css/category/category-form.css', 
+            [], 
+            $this->version
+        );
+        
+        // Custom DataTable Category CSS
+        wp_enqueue_style('wp-equipment-datatable-category', 
+            WP_EQUIPMENT_URL . 'assets/css/category/datatable-category.css',
+            ['datatables'],
+            $this->version
+        );
+
+        error_log('Category styles enqueued'); // Debugging
+    }
+    
+
     }
 
     public function enqueue_scripts() {
         $screen = get_current_screen();
+        error_log('get_current_screen ' . $screen->id);
+
         if (!$screen) return;
 
         // Settings page scripts
@@ -165,15 +197,49 @@ class WP_Equipment_Dependencies {
             wp_enqueue_script('edit-licence-form', WP_EQUIPMENT_URL . 'assets/js/licence/edit-licence-form.js', ['jquery', 'jquery-validate', 'licence-toast', 'licence-datatable'], $this->version, true);
         }
 
-        // In Equipment and Category pages scripts
-        if ($screen->id === 'toplevel_page_wp-equipment' || $screen->id === 'wp-equipment_page_wp-equipment-categories') {
-            // Existing code...
+        if ($screen->id === 'wp-equipment_page_wp-equipment-categories') {
+            // Core dependencies
+            wp_enqueue_script('jquery-validate', 'https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js', ['jquery'], '1.19.5', true);
+            wp_enqueue_script('datatables', 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js', ['jquery'], '1.13.7', true);
+
+            // Components
+            wp_enqueue_script('equipment-toast', WP_EQUIPMENT_URL . 'assets/js/components/equipment-toast.js', ['jquery'], $this->version, true);
+            wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
             
-            // Category scripts
-            wp_enqueue_script('category-datatable', WP_EQUIPMENT_URL . 'assets/js/category/category-datatable.js', ['jquery', 'datatables', 'category-toast'], $this->version, true);
-            wp_enqueue_script('category-form', WP_EQUIPMENT_URL . 'assets/js/category/category-form.js', ['jquery', 'jquery-validate', 'category-toast'], $this->version, true);
-            wp_enqueue_script('category', WP_EQUIPMENT_URL . 'assets/js/category/category-script.js', ['jquery', 'category-toast', 'category-datatable', 'category-form'], $this->version, true);
+
+                wp_enqueue_script('category-datatable', 
+                    WP_EQUIPMENT_URL . 'assets/js/category/category-datatable.js', 
+                    ['jquery', 'datatables', 'equipment-toast'], 
+                    $this->version, 
+                    true
+                );
+                
+                wp_enqueue_script('category-form', 
+                    WP_EQUIPMENT_URL . 'assets/js/category/category-form.js', 
+                    ['jquery', 'jquery-validate', 'equipment-toast'], 
+                    $this->version, 
+                    true
+                );
+                    
+                wp_enqueue_script('category', 
+                    WP_EQUIPMENT_URL . 'assets/js/category/category-script.js', 
+                    ['jquery', 'equipment-toast', 'category-datatable', 'category-form'], 
+                    $this->version, 
+                    true
+                );
+
+                wp_localize_script('category-datatable', 'wpEquipmentData', [
+                    'ajaxUrl' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('wp_equipment_nonce'),
+                    'texts' => [
+                        'loading' => __('Loading...', 'wp-equipment'),
+                        'error' => __('Error occurred', 'wp-equipment'),
+                        'success' => __('Success', 'wp-equipment')
+                    ]
+                ]);
+                
         }
+
 
     }
 

@@ -68,96 +68,148 @@ class CategoryDemoData extends AbstractDemoData {
             return false;
         }
     }
+    
+    private function validateDatabaseStructure(): bool {
+        try {
+            global $wpdb;
+            $table = $this->wpdb->prefix . 'app_categories';
+            
+            // Periksa apakah tabel exists
+            $table_exists = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SHOW TABLES LIKE %s",
+                    $table
+                )
+            );
+            
+            if (!$table_exists) {
+                throw new \Exception("Tabel kategori belum dibuat");
+            }
+
+            // Periksa struktur kolom
+            $columns = $wpdb->get_results("DESCRIBE {$table}");
+            $required_columns = [
+                'id' => 'bigint',
+                'code' => 'varchar',
+                'name' => 'varchar',
+                'description' => 'text',
+                'level' => 'int',
+                'parent_id' => 'bigint',
+                'status' => 'varchar'
+            ];
+
+            $missing_columns = [];
+            $existing_columns = [];
+            
+            foreach ($columns as $col) {
+                $existing_columns[$col->Field] = strtolower($col->Type);
+            }
+
+            foreach ($required_columns as $col_name => $col_type) {
+                if (!isset($existing_columns[$col_name])) {
+                    $missing_columns[] = $col_name;
+                }
+            }
+
+            if (!empty($missing_columns)) {
+                throw new \Exception(
+                    "Kolom yang diperlukan tidak ditemukan: " . 
+                    implode(', ', $missing_columns)
+                );
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            $this->debug("Validasi struktur database gagal: " . $e->getMessage());
+            return false;
+        }
+    }
 
     protected function generate(): void {
         if (!$this->isDevelopmentMode()) {
-            $this->debug('Cannot generate data - not in development mode');
+            $this->debug('Tidak dapat generate data - mode development tidak aktif');
             return;
         }
 
-        // Clear existing data if needed
+        // Validasi struktur database terlebih dahulu
+        if (!$this->validateDatabaseStructure()) {
+            throw new \Exception('Struktur database tidak valid');
+        }
+
+        // Bersihkan data yang ada jika diperlukan
         if ($this->shouldClearData()) {
             $this->wpdb->query("DELETE FROM {$this->wpdb->prefix}app_categories WHERE id > 0");
             $this->wpdb->query("ALTER TABLE {$this->wpdb->prefix}app_categories AUTO_INCREMENT = 1");
-            $this->debug("Cleared existing category data");
+            $this->debug("Data kategori yang ada telah dibersihkan");
         }
 
         try {
-            // Sort categories by level to ensure parents are created first
+            // Urutkan kategori berdasarkan level
             usort($this->categories, function($a, $b) {
                 return $a['level'] - $b['level'];
             });
 
             foreach ($this->categories as $category) {
-                // Check if category already exists
+                // Periksa apakah kategori sudah ada
                 $existing = $this->wpdb->get_row($this->wpdb->prepare(
-                    "SELECT * FROM {$this->wpdb->prefix}app_categories WHERE id = %d",
-                    $category['id']
+                    "SELECT * FROM {$this->wpdb->prefix}app_categories WHERE code = %s",
+                    $category['code']
                 ));
 
                 if ($existing) {
-                    if ($this->shouldClearData()) {
-                        $this->wpdb->delete(
-                            $this->wpdb->prefix . 'app_categories',
-                            ['id' => $category['id']],
-                            ['%d']
-                        );
-                        $this->debug("Deleted existing category: {$category['name']}");
-                    } else {
-                        $this->debug("Category exists: {$category['name']}, skipping...");
-                        continue;
-                    }
+                    $this->debug("Kategori dengan kode {$category['code']} sudah ada, melewati...");
+                    continue;
                 }
 
-                // Prepare category data
+                // Siapkan data kategori
                 $category_data = [
-                    'id' => $category['id'],
                     'code' => $category['code'],
                     'name' => $category['name'],
                     'description' => $category['description'],
                     'level' => $category['level'],
                     'parent_id' => $category['parent_id'],
-                    'group_id' => $category['group_id'],
-                    'relation_id' => $category['relation_id'],
-                    'sort_order' => $category['sort_order'],
+                    'group_id' => $category['group_id'] ?? null,
+                    'relation_id' => $category['relation_id'] ?? null,
+                    'sort_order' => $category['sort_order'] ?? 0,
                     'unit' => $category['unit'],
                     'price' => $category['price'],
-                    'status' => $category['status'],
-                    'created_by' => 1,
+                    'status' => $category['status'] ?? 'active',
+                    'created_by' => get_current_user_id(),
                     'created_at' => current_time('mysql'),
                     'updated_at' => current_time('mysql')
                 ];
 
-                // Insert category
+                // Log data sebelum insert untuk debugging
+                $this->debug("Mencoba insert kategori: " . print_r($category_data, true));
+
+                // Insert kategori dengan error handling yang lebih baik
                 $result = $this->wpdb->insert(
                     $this->wpdb->prefix . 'app_categories',
                     $category_data,
                     [
-                        '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d', 
+                        '%s', '%s', '%s', '%d', '%d', '%d', '%d', 
                         '%d', '%s', '%f', '%s', '%d', '%s', '%s'
                     ]
                 );
 
                 if ($result === false) {
-                    throw new \Exception("Failed to insert category: {$category['name']}");
+                    throw new \Exception(
+                        "Gagal insert kategori {$category['name']}. " .
+                        "Error: " . $this->wpdb->last_error
+                    );
                 }
 
-                self::$category_ids[] = $category['id'];
-                $this->debug("Created category: {$category['name']} with ID: {$category['id']}");
+                $inserted_id = $this->wpdb->insert_id;
+                self::$category_ids[] = $inserted_id;
+                $this->debug("Berhasil membuat kategori: {$category['name']} dengan ID: {$inserted_id}");
             }
 
-            // Reset auto increment after all insertions
-            $this->wpdb->query(
-                "ALTER TABLE {$this->wpdb->prefix}app_categories AUTO_INCREMENT = " . 
-                (max(self::$category_ids) + 1)
-            );
-
         } catch (\Exception $e) {
-            $this->debug("Error in category generation: " . $e->getMessage());
+            $this->debug("Error dalam generate kategori: " . $e->getMessage());
             throw $e;
         }
     }
-
     /**
      * Get array of generated category IDs
      */

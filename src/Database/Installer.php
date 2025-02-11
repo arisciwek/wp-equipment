@@ -39,6 +39,7 @@ defined('ABSPATH') || exit;
 
 class Installer {
     private static $tables = [
+        'app_categories',
         'app_equipments',
         'app_licencees'
     ];
@@ -74,6 +75,9 @@ class Installer {
             self::debug("Starting database installation...");
 
             // Create base tables first
+            self::debug("Creating categories table...");
+            dbDelta(Tables\CategoriesDB::get_schema());
+
             self::debug("Creating equipments table...");
             dbDelta(Tables\EquipmentsDB::get_schema());
 

@@ -7,7 +7,7 @@
  * @version     1.0.0
  * @author      arisciwek
  *
- * Path: /wp-equipment/src/Database/Tables/CategoryDB.php
+ * Path: /wp-equipment/src/Database/Tables/CategoriesDB.php
  *
  * Description: Mendefinisikan struktur tabel categories.
  *              Table prefix yang digunakan adalah 'app_'.
@@ -19,7 +19,7 @@ namespace WPEquipment\Database\Tables;
 
 defined('ABSPATH') || exit;
 
-class CategoryDB {
+class CategoriesDB {
     public static function get_schema() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'app_categories';
@@ -28,7 +28,7 @@ class CategoryDB {
         return "CREATE TABLE {$table_name} (
             id bigint(20) UNSIGNED NOT NULL auto_increment,
             code varchar(10) NOT NULL,
-            name varchar(100) NOT NULL,
+            name varchar(127) NOT NULL,
             description text NULL,
             level tinyint NOT NULL,
             parent_id bigint(20) UNSIGNED NULL,

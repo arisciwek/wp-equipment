@@ -34,6 +34,11 @@
                 }
             };
 
+            if (typeof EquipmentToast === 'undefined') {
+                console.error('Required dependency not found: EquipmentToast');
+                return;
+            }
+
             this.bindEvents();
             this.handleInitialState();
             this.loadStats();
@@ -132,7 +137,7 @@
                 }
             } catch (error) {
                 console.error('Error loading category:', error);
-                CategoryToast.error(error.message || 'Failed to load category data');
+                EquipmentToast.error(error.message || 'Failed to load category data');
                 this.handleLoadError();
             } finally {
                 this.isLoading = false;
@@ -194,7 +199,7 @@
 
             } catch (error) {
                 console.error('Error displaying category data:', error);
-                CategoryToast.error('Error displaying category data');
+                EquipmentToast.error('Error displaying category data');
             }
         },
 
@@ -290,21 +295,55 @@
            this.loadStats();
        },
 
-       loadStats() {
-           $.ajax({
-               url: wpEquipmentData.ajaxUrl,
-               type: 'POST',
-               data: {
-                   action: 'get_category_stats',
-                   nonce: wpEquipmentData.nonce
-               },
-               success: (response) => {
-                   if (response.success) {
-                       this.updateStats(response.data.stats);
-                   }
-               }
-           });
-       },
+        loadStats() {
+            $.ajax({
+                url: wpEquipmentData.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'get_category_stats',
+                    nonce: wpEquipmentData.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        // Update UI with stats
+                        $('#total-categories').text(response.data.total);
+                        if (response.data.recentlyAdded) {
+                            $('#recent-categories').html(this.formatRecentItems(response.data.recentlyAdded));
+                        }
+                    } else {
+                        EquipmentToast.error(response.data.message || 'Failed to load category statistics');
+                    }
+                },
+                error: () => {
+                    EquipmentToast.error('Failed to load category statistics');
+                }
+            });
+        },
+
+        formatRecentItems(items) {
+            if (!items || !items.length) {
+                return '<p>No recent categories</p>';
+            }
+            
+            const escapeHtml = (text) => {
+                if (!text) return '';
+                return text
+                    .toString()
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            };
+
+            return items.map(item => `
+                <div class="recent-item">
+                    <strong>${escapeHtml(item.code)}</strong> - 
+                    ${escapeHtml(item.name)}
+                    <span class="date">${item.created_at}</span>
+                </div>
+            `).join('');
+        },
 
        updateStats(stats) {
            $('#total-categories').text(stats.total_categories);
