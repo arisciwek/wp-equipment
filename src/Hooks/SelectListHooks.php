@@ -33,7 +33,7 @@
 namespace WPEquipment\Hooks;
 
 use WPEquipment\Models\EquipmentModel;
-use WPEquipment\Models\Branch\LicenceModel;
+use WPEquipment\Models\Licence\LicenceModel;
 use WPEquipment\Cache\WPCache;
 
 class SelectListHooks {

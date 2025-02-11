@@ -16,7 +16,7 @@
  *
  * Tables Created:
  * - app_equipments
- * - app_licences
+ * - app_licencees
  * - app_equipment_employees
  * - app_equipment_membership_levels
  *
@@ -32,6 +32,7 @@
  * - Added foreign key management
  * - Added demo data installation
  */
+
 namespace WPEquipment\Database;
 
 defined('ABSPATH') || exit;
@@ -39,123 +40,57 @@ defined('ABSPATH') || exit;
 class Installer {
     private static $tables = [
         'app_equipments',
-        'app_licences',
-        'app_equipment_employees',
-        'app_equipment_membership_levels'
+        'app_licencees'
     ];
 
+    private static function debug($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("[Installer] " . $message);
+        }
+    }
+
+    private static function verify_tables() {
+        global $wpdb;
+        foreach (self::$tables as $table) {
+            $table_name = $wpdb->prefix . $table;
+            $table_exists = $wpdb->get_var($wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $table_name
+            ));
+            if (!$table_exists) {
+                self::debug("Table not found: {$table_name}");
+                throw new \Exception("Failed to create table: {$table_name}");
+            }
+            self::debug("Verified table exists: {$table_name}");
+        }
+    }
+    
     public static function run() {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         global $wpdb;
         
         try {
             $wpdb->query('START TRANSACTION');
+            self::debug("Starting database installation...");
 
-	        // Database Tables
-	        require_once WP_EQUIPMENT_PATH . 'src/Database/Tables/Equipments.php';
-	        require_once WP_EQUIPMENT_PATH . 'src/Database/Tables/Licencees.php';
-	        require_once WP_EQUIPMENT_PATH . 'src/Database/Tables/EquipmentMembershipLevels.php';
-	        require_once WP_EQUIPMENT_PATH . 'src/Database/Tables/EquipmentEmployees.php';
+            // Create base tables first
+            self::debug("Creating equipments table...");
+            dbDelta(Tables\EquipmentsDB::get_schema());
 
-            // Create tables in correct order (parent tables first)
-            dbDelta(Tables\EquipmentMembershipLevels::get_schema());
-            dbDelta(Tables\Equipments::get_schema());
-            dbDelta(Tables\Licencees::get_schema());
-            dbDelta(Tables\EquipmentEmployees::get_schema());
+            self::debug("Creating licencees table...");
+            dbDelta(Tables\LicenceesDB::get_schema());
 
-            // Verify tables were created
-            foreach (self::$tables as $table) {
-                $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}{$table}'");
-                if (!$table_exists) {
-                    throw new \Exception("Failed to create table: {$wpdb->prefix}{$table}");
-                }
-            }
+            // Verify all tables were created
+            self::verify_tables();
 
-            // Drop any existing foreign keys for clean slate
-            self::ensure_no_foreign_keys();
-            
-            // Add foreign key constraints
-            self::add_foreign_keys();
-
-            // Insert default membership levels
-            //Tables\EquipmentMembershipLevels::insert_defaults();
-
-            // Add demo data - TAMBAHKAN INI
-            require_once WP_EQUIPMENT_PATH . 'src/Database/Demo_Data.php';
-            Demo_Data::load();
-
+            self::debug("Database installation completed successfully.");
             $wpdb->query('COMMIT');
             return true;
 
         } catch (\Exception $e) {
             $wpdb->query('ROLLBACK');
-            error_log('Database installation failed: ' . $e->getMessage());
+            self::debug('Database installation failed: ' . $e->getMessage());
             return false;
-        }
-    }
-
-
-    private static function ensure_no_foreign_keys() {
-        global $wpdb;
-        
-        // Tables that might have foreign keys
-        $tables_with_fk = ['app_licences', 'app_equipment_employees'];
-        
-        foreach ($tables_with_fk as $table) {
-            $foreign_keys = $wpdb->get_results("
-                SELECT CONSTRAINT_NAME 
-                FROM information_schema.TABLE_CONSTRAINTS 
-                WHERE TABLE_SCHEMA = DATABASE()
-                AND TABLE_NAME = '{$wpdb->prefix}{$table}' 
-                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-            ");
-
-            foreach ($foreign_keys as $key) {
-                $wpdb->query("
-                    ALTER TABLE {$wpdb->prefix}{$table} 
-                    DROP FOREIGN KEY {$key->CONSTRAINT_NAME}
-                ");
-            }
-        }
-    }
-
-    private static function add_foreign_keys() {
-        global $wpdb;
-
-        $constraints = [
-            // Licencees constraints
-            [
-                'name' => 'fk_licence_equipment',
-                'sql' => "ALTER TABLE {$wpdb->prefix}app_licences
-                         ADD CONSTRAINT fk_licence_equipment
-                         FOREIGN KEY (equipment_id)
-                         REFERENCES {$wpdb->prefix}app_equipments(id)
-                         ON DELETE CASCADE"
-            ],
-            // Employee constraints
-            [
-                'name' => 'fk_employee_equipment',
-                'sql' => "ALTER TABLE {$wpdb->prefix}app_equipment_employees
-                         ADD CONSTRAINT fk_employee_equipment
-                         FOREIGN KEY (equipment_id)
-                         REFERENCES {$wpdb->prefix}app_equipments(id)
-                         ON DELETE CASCADE"
-            ],
-            [
-                'name' => 'fk_employee_licence',
-                'sql' => "ALTER TABLE {$wpdb->prefix}app_equipment_employees
-                         ADD CONSTRAINT fk_employee_licence
-                         FOREIGN KEY (licence_id)
-                         REFERENCES {$wpdb->prefix}app_licences(id)
-                         ON DELETE CASCADE"
-            ]
-        ];
-
-        foreach ($constraints as $constraint) {
-            $result = $wpdb->query($constraint['sql']);
-            if ($result === false) {
-                throw new \Exception("Failed to add foreign key {$constraint['name']}: " . $wpdb->last_error);
-            }
         }
     }
 }
