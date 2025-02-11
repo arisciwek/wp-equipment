@@ -35,7 +35,7 @@ class PermissionModel {
         'edit_own_equipment' => 'Edit Peralatan Sendiri',
         'delete_equipment' => 'Hapus Peralatan',
 
-        // Branch capabilities
+        // Licence capabilities
         'view_licence_list' => 'Lihat Daftar Surat Keterangan',
         'view_licence_detail' => 'Lihat Detail Surat Keterangan',
         'view_own_licence' => 'Lihat Surat Keterangan Sendiri',

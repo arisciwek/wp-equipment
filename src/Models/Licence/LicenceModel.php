@@ -1,9 +1,9 @@
 <?php
 /**
- * Branch Model Class
+ * Licence Model Class
  *
  * @package     WP_Equipment
- * @subpackage  Models/Branch
+ * @subpackage  Models/Licence
  * @version     1.0.0
  * @author      arisciwek
  *
@@ -22,7 +22,7 @@
  * - Added cache support
  */
 
-namespace WPEquipment\Models\Branch;
+namespace WPEquipment\Models\Licence;
 
 class LicenceModel {
     private $table;

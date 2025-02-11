@@ -1,6 +1,6 @@
 <?php
 /**
-* Branch Validator Class
+* Licence Validator Class
 *
 * @package     WP_Equipment
 * @subpackage  Validators/Branch
@@ -23,9 +23,9 @@
 * - Added permission validation
 */
 
-namespace WPEquipment\Validators\Branch;
+namespace WPEquipment\Validators\Licence;
 
-use WPEquipment\Models\Branch\LicenceModel;
+use WPEquipment\Models\Licence\LicenceModel;
 use WPEquipment\Models\EquipmentModel;
 
 class LicenceValidator {
