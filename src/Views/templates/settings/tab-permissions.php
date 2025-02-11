@@ -41,7 +41,7 @@ function get_capability_description($capability) {
         'edit_own_equipment' => __('Memungkinkan mengedit hanya equipment yang ditugaskan', 'wp-equipment'),
         'delete_equipment' => __('Memungkinkan menghapus data equipment', 'wp-equipment'),
         
-        // Branch capabilities
+        // Licence capabilities
         'view_licence_list' => __('Memungkinkan melihat daftar semua surat keterangan', 'wp-equipment'),
         'view_licence_detail' => __('Memungkinkan melihat detail surat keterangan', 'wp-equipment'),
         'view_own_licence' => __('Memungkinkan melihat surat keterangan yang ditugaskan', 'wp-equipment'),

@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: WP Customer
+ * Plugin Name: WP Equipment
  * Plugin URI:
- * Description: Plugin untuk mengelola data Customer dan Cabangnya
+ * Description: Plugin untuk mengelola data Equipment dan Licencenya
  *   
- * @package     WPCustomer
+ * @package     WPEquipment
  * @version     1.0.0
  * @author      arisciwek
  * 
@@ -12,14 +12,14 @@
  */
 
 defined('ABSPATH') || exit;
-define('WP_CUSTOMER_VERSION', '1.0.0');
+define('WP_EQUIPMENT_VERSION', '1.0.0');
 
-class WPCustomer {
+class WPEquipment {
     private static $instance = null;
     private $loader;
     private $plugin_name;
     private $version;
-    private $customer_controller;
+    private $equipment_controller;
     private $dashboard_controller;
 
     public static function getInstance() {
@@ -30,15 +30,15 @@ class WPCustomer {
     }
 
     private function defineConstants() {
-        define('WP_CUSTOMER_FILE', __FILE__);
-        define('WP_CUSTOMER_PATH', plugin_dir_path(__FILE__));
-        define('WP_CUSTOMER_URL', plugin_dir_url(__FILE__));
-        define('WP_CUSTOMER_DEVELOPMENT', false);
+        define('WP_EQUIPMENT_FILE', __FILE__);
+        define('WP_EQUIPMENT_PATH', plugin_dir_path(__FILE__));
+        define('WP_EQUIPMENT_URL', plugin_dir_url(__FILE__));
+        define('WP_EQUIPMENT_DEVELOPMENT', false);
     }
 
     private function __construct() {
-        $this->plugin_name = 'wp-customer';
-        $this->version = WP_CUSTOMER_VERSION;
+        $this->plugin_name = 'wp-equipment';
+        $this->version = WP_EQUIPMENT_VERSION;
 
 
         // Register autoloader first
@@ -47,7 +47,7 @@ class WPCustomer {
                 //error_log("Autoloader attempting to load: " . $class);
             }
 
-            $prefix = 'WPCustomer\\';
+            $prefix = 'WPEquipment\\';
             $base_dir = plugin_dir_path(__FILE__) . 'src/';
             
             $len = strlen($prefix);
@@ -79,65 +79,64 @@ class WPCustomer {
     /*
     private function includeDependencies() {
         // Register includes autoloader first
-        require_once WP_CUSTOMER_PATH . 'includes/class-includes-autoloader.php';
-        $includes_autoloader = new WP_Customer_Includes_Autoloader(WP_CUSTOMER_PATH . 'includes');
+        require_once WP_EQUIPMENT_PATH . 'includes/class-includes-autoloader.php';
+        $includes_autoloader = new WP_Equipment_Includes_Autoloader(WP_EQUIPMENT_PATH . 'includes');
         $includes_autoloader->register();
 
         // Initialize wp-mpdf if available
-        if (file_exists(WP_CUSTOMER_PATH . '../wp-mpdf/wp-mpdf.php')) {
-            require_once WP_CUSTOMER_PATH . '../wp-mpdf/wp-mpdf.php';
+        if (file_exists(WP_EQUIPMENT_PATH . '../wp-mpdf/wp-mpdf.php')) {
+            require_once WP_EQUIPMENT_PATH . '../wp-mpdf/wp-mpdf.php';
             if (function_exists('wp_mpdf_init')) {
                 wp_mpdf_init();
             }
         }
 
         // Initialize loader
-        $this->loader = new WP_Customer_Loader();
+        $this->loader = new WP_Equipment_Loader();
 
         // Initialize settings controller
-        new \WPCustomer\Controllers\SettingsController();
+        new \WPEquipment\Controllers\SettingsController();
     }
     */
 
     
     private function includeDependencies() {
-        require_once WP_CUSTOMER_PATH . 'includes/class-loader.php';
-        require_once WP_CUSTOMER_PATH . 'includes/class-activator.php';
-        require_once WP_CUSTOMER_PATH . 'includes/class-deactivator.php';
-        require_once WP_CUSTOMER_PATH . 'includes/class-dependencies.php';
-        require_once WP_CUSTOMER_PATH . 'includes/class-init-hooks.php';
+        require_once WP_EQUIPMENT_PATH . 'includes/class-loader.php';
+        require_once WP_EQUIPMENT_PATH . 'includes/class-activator.php';
+        require_once WP_EQUIPMENT_PATH . 'includes/class-deactivator.php';
+        require_once WP_EQUIPMENT_PATH . 'includes/class-dependencies.php';
 
         // Initialize wp-mpdf
-        require_once WP_CUSTOMER_PATH . '../wp-mpdf/wp-mpdf.php';
+        require_once WP_EQUIPMENT_PATH . '../wp-mpdf/wp-mpdf.php';
             if (function_exists('wp_mpdf_init')) {
                 wp_mpdf_init();  // Initialize wp-mpdf first
             }
 
-        $this->loader = new WP_Customer_Loader();
+        $this->loader = new WP_Equipment_Loader();
 
-        new \WPCustomer\Controllers\SettingsController();
+        new \WPEquipment\Controllers\SettingsController();
 
     }
 
     
 
     private function initHooks() {
-        register_activation_hook(__FILE__, array('WP_Customer_Activator', 'activate'));
-        register_deactivation_hook(__FILE__, array('WP_Customer_Deactivator', 'deactivate'));
+        register_activation_hook(__FILE__, array('WP_Equipment_Activator', 'activate'));
+        register_deactivation_hook(__FILE__, array('WP_Equipment_Deactivator', 'deactivate'));
 
         // Inisialisasi dependencies
-        $dependencies = new WP_Customer_Dependencies($this->plugin_name, $this->version);
+        $dependencies = new WP_Equipment_Dependencies($this->plugin_name, $this->version);
 
         // Register hooks
         $this->loader->add_action('admin_enqueue_scripts', $dependencies, 'enqueue_styles');
         $this->loader->add_action('admin_enqueue_scripts', $dependencies, 'enqueue_scripts');
 
         // Inisialisasi menu
-        $menu_manager = new \WPCustomer\Controllers\MenuManager($this->plugin_name, $this->version);
+        $menu_manager = new \WPEquipment\Controllers\MenuManager($this->plugin_name, $this->version);
         $this->loader->add_action('init', $menu_manager, 'init');
 
-        register_activation_hook(__FILE__, array('WP_Customer_Activator', 'activate'));
-        register_deactivation_hook(__FILE__, array('WP_Customer_Deactivator', 'deactivate'));
+        register_activation_hook(__FILE__, array('WP_Equipment_Activator', 'activate'));
+        register_deactivation_hook(__FILE__, array('WP_Equipment_Deactivator', 'deactivate'));
         
         // Set auto increment untuk user ID
         //register_activation_hook(__FILE__, function() {
@@ -145,31 +144,20 @@ class WPCustomer {
         //    $wpdb->query("ALTER TABLE {$wpdb->prefix}users AUTO_INCREMENT = 211");
         //});
 
-        $this->initControllers(); 
-
-          new \WPCustomer\Controllers\Branch\BranchController();
-
-        $init_hooks = new WP_Customer_Init_Hooks();
-        $init_hooks->init();          
+    $this->initControllers(); 
+      new \WPEquipment\Controllers\Licence\LicenceController();
     }
 
     private function initControllers() {
         // Inisialisasi controllers
-        $this->customer_controller = new \WPCustomer\Controllers\CustomerController();
+        $this->equipment_controller = new \WPEquipment\Controllers\EquipmentController();
 
-        // Inisialisasi Employee Controller
-        new \WPCustomer\Controllers\Employee\CustomerEmployeeController();
-
-        // Initialize Membership Controller
-        new \WPCustomer\Controllers\Membership\CustomerMembershipController();
-        
         // Register AJAX hooks SEBELUM init
 
         // Tambahkan handler untuk stats
-        add_action('wp_ajax_get_customer_stats', [$this->customer_controller, 'getStats']);
-
-        add_action('wp_ajax_handle_customer_datatable', [$this->customer_controller, 'handleDataTableRequest']);
-        add_action('wp_ajax_get_customer', [$this->customer_controller, 'show']);
+        add_action('wp_ajax_get_equipment_stats', [$this->equipment_controller, 'getStats']);
+        add_action('wp_ajax_handle_equipment_datatable', [$this->equipment_controller, 'handleDataTableRequest']);
+        add_action('wp_ajax_get_equipment', [$this->equipment_controller, 'show']);
     }
 
 
@@ -179,9 +167,9 @@ class WPCustomer {
 }
 
 // Initialize plugin
-function wp_customer() {
-    return WPCustomer::getInstance();
+function wp_equipment() {
+    return WPEquipment::getInstance();
 }
 
 // Start the plugin
-wp_customer()->run();
+wp_equipment()->run();

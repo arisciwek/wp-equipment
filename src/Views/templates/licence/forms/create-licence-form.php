@@ -1,6 +1,6 @@
 <?php
 /**
- * Create Branch Form Template
+ * Create Licence Form Template
  *
  * @package     WP_Equipment
  * @subpackage  Views/Templates/Licence/Forms
