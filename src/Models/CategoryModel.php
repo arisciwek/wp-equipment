@@ -30,6 +30,20 @@ class CategoryModel {
         $this->cache = new EquipmentCacheManager();
     }
 
+    /**
+     * Get categories by level
+     */
+    public function getByLevel(int $level): array {
+        global $wpdb;
+
+        return $wpdb->get_results($wpdb->prepare("
+            SELECT id, code, name 
+            FROM {$this->table}
+            WHERE level = %d
+            ORDER BY sort_order ASC, name ASC
+        ", $level));
+    }
+
     public function create(array $data): ?int {
         global $wpdb;
 

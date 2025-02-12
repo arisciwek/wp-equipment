@@ -3,7 +3,7 @@
 *
 * @package     WP_Equipment
 * @subpackage  Assets/JS
-* @version     1.0.0
+* @version     1.1.0
 * @author      arisciwek
 *
 * Path: /wp-equipment/assets/js/category-datatable.js
@@ -17,8 +17,14 @@
        currentRow: null,
 
        init() {
+            // Check dependencies
             if (typeof EquipmentToast === 'undefined') {
                 console.error('Required dependency not found: EquipmentToast');
+                return;
+            }
+
+            if (typeof CategoryForm === 'undefined') {
+                console.error('Required dependency not found: CategoryForm');
                 return;
             }
 
@@ -27,6 +33,10 @@
        },
 
        initDataTable() {
+           if ($.fn.DataTable.isDataTable('#categories-table')) {
+               $('#categories-table').DataTable().destroy();
+           }
+
            this.table = $('#categories-table').DataTable({
                processing: true,
                serverSide: true,
@@ -36,6 +46,10 @@
                    data: (d) => {
                        d.action = 'handle_category_datatable';
                        d.nonce = wpEquipmentData.nonce;
+                   },
+                   error: (xhr, error, thrown) => {
+                       console.error('DataTables error:', error);
+                       EquipmentToast.error('Gagal memuat data kategori');
                    }
                },
                columns: [
@@ -63,88 +77,164 @@
                    emptyTable: 'No categories found',
                    zeroRecords: 'No matching categories found'
                },
-               drawCallback: () => {
+               drawCallback: (settings) => {
+                   // Highlight current row if any
                    if (this.currentRow) {
                        this.highlightRow(this.currentRow);
                    }
+
+                   // Get current hash if any
+                   const hash = window.location.hash;
+                   if (hash && hash.startsWith('#')) {
+                       const id = hash.substring(1);
+                       if (id) {
+                           this.highlightRow(id);
+                       }
+                   }
+               },
+               createdRow: (row, data) => {
+                   $(row).attr('data-id', data.id);
                }
            });
        },
 
        bindEvents() {
+           // View action
            $('#categories-table').on('click', '.view-category', (e) => {
                e.preventDefault();
                const id = $(e.currentTarget).data('id');
-               window.location.hash = id;
+               if (id) window.location.hash = id;
+
+               // Reset tab ke details jika sudah di panel kanan
+               $('.tab-content').removeClass('active');
+               $('#category-details').addClass('active');
+               $('.nav-tab').removeClass('nav-tab-active');
+               $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
            });
 
+           // Edit action
            $('#categories-table').on('click', '.edit-category', (e) => {
                e.preventDefault();
                const id = $(e.currentTarget).data('id');
                this.loadEditForm(id);
            });
 
+           // Delete action dengan konfirmasi
            $('#categories-table').on('click', '.delete-category', (e) => {
                e.preventDefault();
                const id = $(e.currentTarget).data('id');
                this.confirmDelete(id);
            });
+
+           // Refresh table after CRUD operations
+           $(document)
+               .off('category:created.datatable category:updated.datatable category:deleted.datatable')
+               .on('category:created.datatable category:updated.datatable category:deleted.datatable',
+                   () => this.refresh());
        },
 
-       highlightRow(id) {
-           this.currentRow = id;
-           $('#categories-table tr').removeClass('highlight');
-           $(`#categories-table tr[data-id="${id}"]`).addClass('highlight');
-       },
-
-       refresh() {
-           this.table.ajax.reload(null, false);
-       },
-
-       loadEditForm(id) {
-           $.ajax({
-               url: wpEquipmentData.ajaxUrl,
-               type: 'POST',
-               data: {
-                   action: 'get_category',
-                   id: id,
-                   nonce: wpEquipmentData.nonce
-               },
-               success: (response) => {
-                   if (response.success) {
-                       CategoryForm.populateEditForm(response.data.category);
-                   } else {
-                       CategoryToast.error(response.data.message);
+       async loadEditForm(id) {
+           try {
+               const response = await $.ajax({
+                   url: wpEquipmentData.ajaxUrl,
+                   type: 'POST',
+                   data: {
+                       action: 'get_category',
+                       id: id,
+                       nonce: wpEquipmentData.nonce
                    }
-               },
-               error: () => {
-                   CategoryToast.error('Failed to load category data');
+               });
+
+               if (response.success) {
+                   // Gunakan CategoryForm yang baru untuk populate form
+                   if (window.CategoryForm) {
+                       window.CategoryForm.populateEditForm(response.data);
+                   } else {
+                       console.error('CategoryForm component not found');
+                       EquipmentToast.error('Komponen form edit tidak tersedia');
+                   }
+               } else {
+                   EquipmentToast.error(response.data?.message || 'Gagal memuat data kategori');
                }
-           });
+           } catch (error) {
+               console.error('Load category error:', error);
+               EquipmentToast.error('Gagal menghubungi server');
+           }
        },
 
        confirmDelete(id) {
-           if (confirm('Are you sure you want to delete this category?')) {
-               $.ajax({
+           // Gunakan WIModal jika tersedia, jika tidak gunakan confirm biasa
+           if (typeof WIModal !== 'undefined') {
+               WIModal.show({
+                   title: 'Konfirmasi Hapus',
+                   message: 'Yakin ingin menghapus kategori ini? Aksi ini tidak dapat dibatalkan.',
+                   icon: 'trash',
+                   type: 'danger',
+                   confirmText: 'Hapus',
+                   confirmClass: 'button-danger',
+                   cancelText: 'Batal',
+                   onConfirm: () => this.handleDelete(id)
+               });
+           } else {
+               if (confirm('Yakin ingin menghapus kategori ini?')) {
+                   this.handleDelete(id);
+               }
+           }
+       },
+
+       async handleDelete(id) {
+           try {
+               const response = await $.ajax({
                    url: wpEquipmentData.ajaxUrl,
                    type: 'POST',
                    data: {
                        action: 'delete_category',
                        id: id,
                        nonce: wpEquipmentData.nonce
-                   },
-                   success: (response) => {
-                       if (response.success) {
-                           CategoryToast.success('Category deleted successfully');
-                           $(document).trigger('category:deleted');
-                       } else {
-                           CategoryToast.error(response.data.message);
-                       }
-                   },
-                   error: () => {
-                       CategoryToast.error('Failed to delete category');
                    }
                });
+
+               if (response.success) {
+                   EquipmentToast.success(response.data.message || 'Kategori berhasil dihapus');
+
+                   // Clear hash if deleted category is currently viewed
+                   if (window.location.hash === `#${id}`) {
+                       window.location.hash = '';
+                   }
+
+                   this.refresh();
+                   $(document).trigger('category:deleted');
+               } else {
+                   EquipmentToast.error(response.data?.message || 'Gagal menghapus kategori');
+               }
+           } catch (error) {
+               console.error('Delete category error:', error);
+               EquipmentToast.error('Gagal menghubungi server');
+           }
+       },
+
+       highlightRow(id) {
+           this.currentRow = id;
+           $('#categories-table tr').removeClass('highlight');
+           $(`#categories-table tr[data-id="${id}"]`).addClass('highlight');
+
+           // Scroll into view if needed
+           const $row = $(`#categories-table tr[data-id="${id}"]`);
+           if ($row.length) {
+               const container = this.table.table().container();
+               const rowTop = $row.position().top;
+               const containerHeight = $(container).height();
+               const scrollTop = $(container).scrollTop();
+
+               if (rowTop < scrollTop || rowTop > scrollTop + containerHeight) {
+                   $row[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+               }
+           }
+       },
+
+       refresh() {
+           if (this.table) {
+               this.table.ajax.reload(null, false);
            }
        }
    };

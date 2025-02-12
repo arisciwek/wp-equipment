@@ -55,8 +55,48 @@ class CategoryController {
 
         add_action('wp_ajax_generate_demo_categories', [$this, 'generateDemoDataCategories']);
 	    add_action('wp_ajax_get_category_stats', [$this, 'getCategoryStats']);
+		add_action('wp_ajax_get_category_parents', [$this, 'getCategoryParents']);
 
     }
+	
+	/**
+	 * Get available parent categories based on child level
+	 */
+	public function getCategoryParents(): void {
+		try {
+			// Validasi nonce dan permission
+			check_ajax_referer('wp_equipment_nonce', 'nonce');
+			if (!current_user_can('manage_options')) {
+				throw new \Exception('Insufficient permissions');
+			}
+
+			// Validasi child level
+			$childLevel = isset($_POST['child_level']) ? intval($_POST['child_level']) : 0;
+			if ($childLevel <= 1) {
+				throw new \Exception('Invalid child level');
+			}
+
+			// Coba ambil dari cache dulu
+			$cacheKey = "parent_options_level_{$childLevel}";
+			$parentOptions = $this->cache->get('category', $cacheKey);
+
+			if ($parentOptions === null) {
+				// Jika tidak ada di cache, query dari database
+				$parentLevel = $childLevel - 1;
+				$parentOptions = $this->model->getByLevel($parentLevel);
+				
+				// Simpan ke cache
+				$this->cache->set('category', $parentOptions, null, $cacheKey);
+			}
+
+			wp_send_json_success($parentOptions);
+
+		} catch (\Exception $e) {
+			wp_send_json_error([
+				'message' => $e->getMessage()
+			]);
+		}
+	}
 
 	public function getCategoryStats() {
 		global $wpdb;

@@ -1,83 +1,201 @@
 <?php
 /**
-* Create Category Form Template
-*
-* @package     WP_Equipment
-* @subpackage  Views/Templates/Category/Forms
-* @version     1.0.0
-* @author      arisciwek
-*
-* Path: /wp-equipment/src/Views/templates/category/forms/create-category-form.php
-*/
+ * Create Category Form Template
+ *
+ * @package     WP_Equipment
+ * @subpackage  Views/Templates/Category/Forms
+ * @version     1.0.0
+ * @author      arisciwek
+ *
+ * Path: /wp-equipment/src/Views/templates/category/forms/create-category-form.php
+ *
+ * Description: Template modal form untuk membuat kategori baru.
+ *              Handle validasi input dan interaksi form.
+ *              Terintegrasi dengan kategori model dan controller.
+ *
+ * Dependencies:
+ * - jQuery
+ * - jQuery Validation
+ * - CategoryForm component
+ * - WordPress AJAX API
+ *
+ * Changelog:
+ * 1.0.0 - 2024-02-12
+ * - Initial release
+ * - Added proper form validation
+ * - Added modal management
+ * - Added hierarchy selection
+ * - Added unit and price fields
+ *
+ * Last modified: 2024-02-12 16:30:00
+ */
 
 defined('ABSPATH') || exit;
 ?>
 
-<div class="modal-overlay" style="display: none;">
+<div id="create-category-modal" class="modal-overlay" style="display: none;">
     <div class="modal-container">
+        <!-- Header Modal -->
         <div class="modal-header">
-            <h3>Add New Category</h3>
+            <h3><?php _e('Tambah Kategori Baru', 'wp-equipment'); ?></h3>
             <button type="button" class="modal-close">&times;</button>
         </div>
-        <form id="category-form">
+
+        <!-- Form Utama -->
+        <form id="create-category-form" method="post">
             <div class="modal-content">
+                <!-- Informasi Dasar -->
+                <div class="category-form-section">
+                    <h4><?php _e('Informasi Dasar', 'wp-equipment'); ?></h4>
+                    
+                    <div class="form-row">
+                        <!-- Kode Kategori -->
+                        <div class="form-group">
+                            <label for="category-code">
+                                <?php _e('Kode', 'wp-equipment'); ?>
+                                <span class="required">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="category-code" 
+                                   name="code" 
+                                   class="regular-text" 
+                                   maxlength="20"
+                                   required>
+                            <span class="form-text">
+                                <?php _e('Kode unik untuk kategori', 'wp-equipment'); ?>
+                            </span>
+                        </div>
 
-               <form id="create-category-form">
-                   <div class="form-group">
-                       <label for="category-code"><?php _e('Code', 'wp-equipment'); ?> <span class="required">*</span></label>
-                       <input type="text" id="category-code" name="code" required>
-                   </div>
+                        <!-- Nama Kategori -->
+                        <div class="form-group">
+                            <label for="category-name">
+                                <?php _e('Nama', 'wp-equipment'); ?>
+                                <span class="required">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="category-name" 
+                                   name="name" 
+                                   class="regular-text" 
+                                   maxlength="100"
+                                   required>
+                            <span class="form-text">
+                                <?php _e('Nama lengkap kategori', 'wp-equipment'); ?>
+                            </span>
+                        </div>
+                    </div>
 
-                   <div class="form-group">
-                       <label for="category-name"><?php _e('Name', 'wp-equipment'); ?> <span class="required">*</span></label>
-                       <input type="text" id="category-name" name="name" required>
-                   </div>
+                    <!-- Deskripsi -->
+                    <div class="form-group">
+                        <label for="category-description">
+                            <?php _e('Deskripsi', 'wp-equipment'); ?>
+                        </label>
+                        <textarea id="category-description" 
+                                  name="description" 
+                                  rows="3" 
+                                  class="regular-text"></textarea>
+                    </div>
+                </div>
 
-                   <div class="form-group">
-                       <label for="category-description"><?php _e('Description', 'wp-equipment'); ?></label>
-                       <textarea id="category-description" name="description" rows="3"></textarea>
-                   </div>
+                <!-- Informasi Hierarki -->
+                <div class="category-form-section">
+                    <h4><?php _e('Hierarki', 'wp-equipment'); ?></h4>
+                    
+                    <div class="form-row">
+                        <!-- Level -->
+                        <div class="form-group">
+                            <label for="category-level">
+                                <?php _e('Level', 'wp-equipment'); ?>
+                                <span class="required">*</span>
+                            </label>
+                            <select id="category-level" name="level" required>
+                                <option value=""><?php _e('Pilih Level', 'wp-equipment'); ?></option>
+                                <option value="1"><?php _e('Level 1 - Kategori Utama', 'wp-equipment'); ?></option>
+                                <option value="2"><?php _e('Level 2 - Sub Kategori', 'wp-equipment'); ?></option>
+                                <option value="3"><?php _e('Level 3 - Tipe Layanan', 'wp-equipment'); ?></option>
+                            </select>
+                        </div>
 
-                   <div class="form-row">
-                       <div class="form-group col-md-6">
-                           <label for="category-level"><?php _e('Level', 'wp-equipment'); ?> <span class="required">*</span></label>
-                           <select id="category-level" name="level" required>
-                               <option value="1"><?php _e('Level 1 - Main Category', 'wp-equipment'); ?></option>
-                               <option value="2"><?php _e('Level 2 - Sub Category', 'wp-equipment'); ?></option>
-                               <option value="3"><?php _e('Level 3 - Service Type', 'wp-equipment'); ?></option>
-                           </select>
-                       </div>
+                        <!-- Parent Category -->
+                        <div class="form-group">
+                            <label for="category-parent">
+                                <?php _e('Kategori Induk', 'wp-equipment'); ?>
+                            </label>
+                            <select id="category-parent" name="parent_id" disabled>
+                                <option value=""><?php _e('Pilih Kategori Induk', 'wp-equipment'); ?></option>
+                            </select>
+                            <span class="form-text">
+                                <?php _e('Pilih level terlebih dahulu', 'wp-equipment'); ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-                       <div class="form-group col-md-6">
-                           <label for="category-parent"><?php _e('Parent Category', 'wp-equipment'); ?></label>
-                           <select id="category-parent" name="parent_id">
-                               <option value=""><?php _e('None', 'wp-equipment'); ?></option>
-                           </select>
-                       </div>
-                   </div>
+                <!-- Informasi Produk -->
+                <div class="category-form-section">
+                    <h4><?php _e('Informasi Produk', 'wp-equipment'); ?></h4>
+                    
+                    <div class="form-row">
+                        <!-- Unit -->
+                        <div class="form-group">
+                            <label for="category-unit">
+                                <?php _e('Satuan', 'wp-equipment'); ?>
+                            </label>
+                            <input type="text" 
+                                   id="category-unit" 
+                                   name="unit" 
+                                   class="regular-text" 
+                                   maxlength="10">
+                            <span class="form-text">
+                                <?php _e('Contoh: Pcs, Box, Unit', 'wp-equipment'); ?>
+                            </span>
+                        </div>
 
-                   <div class="form-row">
-                       <div class="form-group col-md-6">
-                           <label for="category-unit"><?php _e('Unit', 'wp-equipment'); ?></label>
-                           <input type="text" id="category-unit" name="unit">
-                       </div>
+                        <!-- Price -->
+                        <div class="form-group">
+                            <label for="category-price">
+                                <?php _e('Harga', 'wp-equipment'); ?>
+                            </label>
+                            <input type="number" 
+                                   id="category-price" 
+                                   name="price" 
+                                   class="regular-text" 
+                                   min="0" 
+                                   step="0.01">
+                            <span class="form-text">
+                                <?php _e('Harga default untuk kategori ini', 'wp-equipment'); ?>
+                            </span>
+                        </div>
+                    </div>
 
-                       <div class="form-group col-md-6">
-                           <label for="category-price"><?php _e('Price', 'wp-equipment'); ?></label>
-                           <input type="number" id="category-price" name="price" step="0.01" min="0">
-                       </div>
-                   </div>
-
-                   <div class="form-group">
-                       <label for="category-sort-order"><?php _e('Sort Order', 'wp-equipment'); ?></label>
-                       <input type="number" id="category-sort-order" name="sort_order" value="0" min="0">
-                   </div>
-               </form>
-
+                    <!-- Sort Order -->
+                    <div class="form-group">
+                        <label for="category-sort-order">
+                            <?php _e('Urutan', 'wp-equipment'); ?>
+                        </label>
+                        <input type="number" 
+                               id="category-sort-order" 
+                               name="sort_order" 
+                               class="small-text" 
+                               min="0" 
+                               value="0">
+                        <span class="form-text">
+                            <?php _e('Urutan tampilan (opsional)', 'wp-equipment'); ?>
+                        </span>
+                    </div>
+                </div>
             </div>
+
+            <!-- Footer Modal -->
             <div class="modal-footer">
-                <button type="submit" class="button button-primary">Save</button>
-                <button type="button" class="button cancel-button">Cancel</button>
+                <div class="form-submit">
+                    <button type="submit" class="button button-primary" id="submit-create-category">
+                        <?php _e('Simpan Kategori', 'wp-equipment'); ?>
+                    </button>
+                    <button type="button" class="button cancel-button" id="cancel-create-category">
+                        <?php _e('Batal', 'wp-equipment'); ?>
+                    </button>
+                    <span class="spinner"></span>
+                </div>
             </div>
         </form>
     </div>
