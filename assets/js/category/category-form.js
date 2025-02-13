@@ -133,7 +133,14 @@
                 },
                 errorElement: "span",
                 errorClass: "form-error",
-                validClass: "form-valid"
+                validClass: "form-valid",
+                // Tambahkan kode yang sama di sini juga
+                highlight: function(element, errorClass, validClass) {
+                    $(element).closest('.form-group').addClass('has-error');
+                },
+                unhighlight: function(element, errorClass, validClass) {
+                    $(element).closest('.form-group').removeClass('has-error');
+                }
             });
 
             // Configure validation for edit form
@@ -141,14 +148,14 @@
                 rules: {
                     code: {
                         required: true,
-                        minlength: 3,
+                        minlength: 1,
                         maxlength: 20,
                         validCode: true
                     },
                     name: {
                         required: true,
                         minlength: 3,
-                        maxlength: 100
+                        maxlength: 127
                     },
                     level: {
                         required: true
@@ -157,7 +164,7 @@
                 messages: {
                     code: {
                         required: "Kode kategori wajib diisi",
-                        minlength: "Kode minimal 3 karakter",
+                        minlength: "Kode minimal 1 karakter",
                         maxlength: "Kode maksimal 20 karakter"
                     },
                     name: {
@@ -171,7 +178,14 @@
                 },
                 errorElement: "span",
                 errorClass: "form-error",
-                validClass: "form-valid"
+                validClass: "form-valid",
+                // Tambahkan kode yang sama di sini juga
+                highlight: function(element, errorClass, validClass) {
+                    $(element).closest('.form-group').addClass('has-error');
+                },
+                unhighlight: function(element, errorClass, validClass) {
+                    $(element).closest('.form-group').removeClass('has-error');
+                }
             });
         },
 
@@ -180,20 +194,26 @@
             const $form = $select.closest('form');
             const $parentSelect = $form.find('[name="parent_id"]');
             const level = parseInt($select.val());
-
-            if (!level) {
-                $parentSelect.prop('disabled', true).html('<option value="">Pilih Kategori Induk</option>');
-                return;
+        
+            // Hanya terapkan disable logic untuk create form
+            if ($form.is(this.createForm)) {
+                if (!level || level === 1) {
+                    $parentSelect.prop('disabled', true).html('<option value="">Pilih Kategori Induk</option>');
+                    return;
+                }
+        
+                if (level > 1) {
+                    this.loadParentOptions(level, $parentSelect);
+                    $parentSelect.prop('disabled', false);
+                }
+            } else if ($form.is(this.editForm)) {
+                // Untuk edit form, selalu enable parent select jika level > 1
+                if (level > 1) {
+                    this.loadParentOptions(level, $parentSelect);
+                    $parentSelect.prop('disabled', false);
+                }
             }
-
-            // Enable parent select for non-level-1 categories
-            if (level > 1) {
-                this.loadParentOptions(level, $parentSelect);
-                $parentSelect.prop('disabled', false);
-            } else {
-                $parentSelect.prop('disabled', true).val('');
-            }
-
+        
             // Show warning if editing and level changed
             if ($form.is('#edit-category-form')) {
                 const originalLevel = $form.data('original-level');
@@ -205,7 +225,27 @@
             }
         },
 
-        async loadParentOptions(childLevel, $select) {
+        // Tambahkan method handleParentChange
+        handleParentChange(e) {
+            const $select = $(e.target);
+            const $form = $select.closest('form');
+            const selectedParentId = $select.val();
+            
+            // Trigger event untuk notifikasi perubahan parent
+            $(document).trigger('category:parentChanged', {
+                parentId: selectedParentId,
+                formId: $form.attr('id')
+            });
+
+            // Update validasi form jika diperlukan
+            if (this.editForm && $form.is(this.editForm)) {
+                this.editForm.validate().element($select);
+            } else if (this.createForm && $form.is(this.createForm)) {
+                this.createForm.validate().element($select);
+            }
+        },
+
+        async loadParentOptions(childLevel, $select, selectedValue = null) {
             try {
                 const response = await $.ajax({
                     url: wpEquipmentData.ajaxUrl,
@@ -216,11 +256,12 @@
                         nonce: wpEquipmentData.nonce
                     }
                 });
-
+        
                 if (response.success) {
                     let options = '<option value="">Pilih Kategori Induk</option>';
                     response.data.forEach(category => {
-                        options += `<option value="${category.id}">${category.code} - ${category.name}</option>`;
+                        const selected = selectedValue && category.id == selectedValue ? 'selected' : '';
+                        options += `<option value="${category.id}" ${selected}>${category.code} - ${category.name}</option>`;
                     });
                     $select.html(options);
                 } else {
@@ -317,21 +358,23 @@
             // Reset form first
             this.resetForm(this.editForm);
 
-            // Set form data
+            // Set level 
+            $('#edit-category-level').val(category.level);
+
+            // Load parent options untuk edit form (selalu enable)
+            if (category.level > 1) {
+                const $parentSelect = $('#edit-category-parent');
+                $parentSelect.prop('disabled', false); // Parent select selalu enabled di edit form
+                this.loadParentOptions(category.level, $parentSelect, category.parent_id);
+            }
+
+            // Set form data lainnya
             Object.keys(category).forEach(key => {
                 const $field = this.editForm.find(`[name="${key}"]`);
-                if ($field.length) {
+                if ($field.length && key !== 'level' && key !== 'parent_id') {
                     $field.val(category[key]);
                 }
             });
-
-            // Store original level for change detection
-            this.editForm.data('original-level', category.level);
-
-            // Handle parent category loading
-            if (category.level > 1) {
-                this.loadParentOptions(category.level, $('#edit-category-parent'));
-            }
 
             // Show parent warning if has children
             $('.parent-warning').toggle(!!category.has_children);

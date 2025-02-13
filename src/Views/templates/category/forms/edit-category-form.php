@@ -138,6 +138,7 @@ defined('ABSPATH') || exit;
                             <select id="edit-category-parent" name="parent_id" disabled>
                                 <option value=""><?php _e('Pilih Kategori Induk', 'wp-equipment'); ?></option>
                             </select>
+                            <input type="hidden" name="parent_id_hidden" value="">
                             <span class="form-text parent-warning" style="display: none;">
                                 <?php _e('Kategori ini memiliki sub-kategori', 'wp-equipment'); ?>
                             </span>
@@ -159,7 +160,7 @@ defined('ABSPATH') || exit;
                                    id="edit-category-unit" 
                                    name="unit" 
                                    class="regular-text" 
-                                   maxlength="10">
+                                   maxlength="50">
                             <span class="form-text">
                                 <?php _e('Contoh: Pcs, Box, Unit', 'wp-equipment'); ?>
                             </span>
