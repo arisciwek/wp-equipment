@@ -56,9 +56,35 @@ class CategoryController {
         add_action('wp_ajax_generate_demo_categories', [$this, 'generateDemoDataCategories']);
 	    add_action('wp_ajax_get_category_stats', [$this, 'getCategoryStats']);
 		add_action('wp_ajax_get_category_parents', [$this, 'getCategoryParents']);
+        add_action('wp_ajax_create_category_button', [$this, 'createCategoryButton']);
 
     }
-	
+
+    public function createCategoryButton() {
+        try {
+            check_ajax_referer('wp_equipment_nonce', 'nonce');
+            
+            if (!current_user_can('add_equipment')) {
+                wp_send_json_success(['button' => '']);
+                return;
+            }
+
+            $button = '<button type="button" class="button button-primary" id="add-customer-btn">';
+            $button .= '<span class="dashicons dashicons-plus-alt"></span>';
+            $button .= __('Tambah Category', 'wp-equipment');
+            $button .= '</button>';
+
+            wp_send_json_success([
+                'button' => $button
+            ]);
+
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
 	/**
 	 * Get available parent categories based on child level
 	 */
@@ -342,59 +368,60 @@ class CategoryController {
 	}
 
 	public function update() {
-	   try {
-	       check_ajax_referer('wp_equipment_nonce', 'nonce');
+		try {
+			check_ajax_referer('wp_equipment_nonce', 'nonce');
 
-	       if (!current_user_can('manage_options')) {
-	           wp_send_json_error(['message' => __('Insufficient permissions', 'wp-equipment')]);
-	           return;
-	       }
+			if (!current_user_can('manage_options')) {
+				wp_send_json_error(['message' => __('Insufficient permissions', 'wp-equipment')]);
+				return;
+			}
 
-	       $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-	       if (!$id) {
-	           throw new \Exception('Invalid category ID');
-	       }
+			$id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+			if (!$id) {
+				throw new \Exception('Invalid category ID');
+			}
 
-	       $existing = $this->model->find($id);
-	       if (!$existing) {
-	           throw new \Exception('Category not found');
-	       }
+			$existing = $this->model->find($id);
+			if (!$existing) {
+				throw new \Exception('Category not found');
+			}
 
-	       $data = [
-	           'code' => sanitize_text_field($_POST['code']),
-	           'name' => sanitize_text_field($_POST['name']),
-	           'description' => sanitize_textarea_field($_POST['description'] ?? ''),
-	           'level' => intval($_POST['level']),
-	           'parent_id' => !empty($_POST['parent_id']) ? intval($_POST['parent_id']) : null,
-	           'sort_order' => !empty($_POST['sort_order']) ? intval($_POST['sort_order']) : 0,
-	           'unit' => !empty($_POST['unit']) ? sanitize_text_field($_POST['unit']) : null,
-	           'price' => !empty($_POST['price']) ? floatval($_POST['price']) : null
-	       ];
+			$data = [
+				'code' => sanitize_text_field($_POST['code']),
+				'name' => sanitize_text_field($_POST['name']),
+				'description' => sanitize_textarea_field($_POST['description'] ?? ''),
+				'level' => intval($_POST['level']),
+				'parent_id' => !empty($_POST['parent_id']) ? intval($_POST['parent_id']) : null,
+				'sort_order' => !empty($_POST['sort_order']) ? intval($_POST['sort_order']) : 0,
+				'unit' => !empty($_POST['unit']) ? sanitize_text_field($_POST['unit']) : null,
+				'price' => !empty($_POST['price']) ? floatval($_POST['price']) : null
+			];
 
-	       $errors = $this->validator->validateUpdate($data, $id);
-	       if (!empty($errors)) {
-	           wp_send_json_error(['message' => implode(', ', $errors)]);
-	           return;
-	       }
+			$errors = $this->validator->validateUpdate($data, $id);
+			if (!empty($errors)) {
+				wp_send_json_error(['message' => implode(', ', $errors)]);
+				return;
+			}
 
-	       $updated = $this->model->update($id, $data);
-	       if (!$updated) {
-	           throw new \Exception('Failed to update category');
-	       }
+			$updated = $this->model->update($id, $data);
+			if (!$updated) {
+				throw new \Exception('Failed to update category');
+			}
 
-	       $category = $this->model->find($id);
-	       if (!$category) {
-	           throw new \Exception('Failed to retrieve updated category');
-	       }
+			$category = $this->model->find($id);
+			if (!$category) {
+				throw new \Exception('Failed to retrieve updated category');
+			}
 
-	       wp_send_json_success([
-	           'message' => __('Category updated successfully', 'wp-equipment'),
-	           'data' => ['category' => $category]
-	       ]);
+			// Send the updated category data in the response
+			wp_send_json_success([
+				'message' => __('Category updated successfully', 'wp-equipment'),
+				'data' => ['category' => $category]
+			]);
 
-	   } catch (\Exception $e) {
-	       wp_send_json_error(['message' => $e->getMessage()]);
-	   }
+		} catch (\Exception $e) {
+			wp_send_json_error(['message' => $e->getMessage()]);
+		}
 	}
 
 	public function show() {

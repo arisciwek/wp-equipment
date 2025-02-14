@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
     
     <!-- Dashboard Section -->
-    <div class="wp-equipment-dashboard">
+    <div class="wp-category-dashboard">
         <div class="postbox">
             <div class="inside">
                 <div class="main">
@@ -34,13 +34,13 @@ defined('ABSPATH') || exit;
     </div>
 
     <!-- Main Content Area -->
-    <div class="wp-equipment-content-area">
-        <div id="wp-equipment-main-container" class="wp-equipment-container">
+    <div class="wp-category-content-area">
+        <div id="wp-category-main-container" class="wp-category-container">
             <!-- Left Panel -->
             <?php require_once WP_EQUIPMENT_PATH . 'src/Views/templates/category/category-left-panel.php'; ?>
 
             <!-- Right Panel -->
-            <div id="wp-equipment-right-panel" class="wp-equipment-right-panel hidden">
+            <div id="wp-category-right-panel" class="wp-category-right-panel hidden">
                 <?php require_once WP_EQUIPMENT_PATH . 'src/Views/templates/category/category-right-panel.php'; ?>
             </div>
         </div>

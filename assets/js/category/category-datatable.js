@@ -101,16 +101,23 @@
        bindEvents() {
            // View action
            $('#categories-table').on('click', '.view-category', (e) => {
-               e.preventDefault();
-               const id = $(e.currentTarget).data('id');
-               if (id) window.location.hash = id;
-
-               // Reset tab ke details jika sudah di panel kanan
-               $('.tab-content').removeClass('active');
-               $('#category-details').addClass('active');
-               $('.nav-tab').removeClass('nav-tab-active');
-               $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
-           });
+            e.preventDefault();
+            const id = $(e.currentTarget).data('id');
+            if (id) {
+                // Update hash
+                window.location.hash = id;
+                
+                // Reset dan aktifkan tab details
+                $('.nav-tab').removeClass('nav-tab-active');
+                $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
+                $('.tab-content').removeClass('active').hide();
+                $('#category-details').addClass('active').show();
+                
+                // Buka panel kanan
+                $('.wp-category-container').addClass('with-right-panel');
+                $('.wp-category-right-panel').addClass('visible');
+            }
+        });
 
            // Edit action
            $('#categories-table').on('click', '.edit-category', (e) => {
@@ -181,7 +188,7 @@
                }
            }
        },
-
+           
        async handleDelete(id) {
            try {
                const response = await $.ajax({

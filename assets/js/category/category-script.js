@@ -39,7 +39,6 @@
     'use strict';
 
     const Category = {
-        // Properties
         currentId: null,
         isLoading: false,
         components: {
@@ -47,164 +46,127 @@
             rightPanel: null,
             detailsPanel: null,
             stats: {
-                totalCategories: null
+                totalCategorys: null,
+                totalBranches: null
             }
         },
 
-        // Initialization
-        init() {
-            // Check dependencies
-            if (typeof EquipmentToast === 'undefined') {
-                console.error('Required dependency not found: EquipmentToast');
-                return;
-            }
+       init() {
+           this.components = {
+               container: $('.wp-equipment-container'),
+               rightPanel: $('.wp-equipment-right-panel'),
+               detailsPanel: $('#category-details'),
+               stats: {
+                   totalCategorys: $('#total-categories')
+               }
+           };
 
-            // Initialize component references
-            this.components = {
-                container: $('.wp-equipment-container'),
-                rightPanel: $('.wp-equipment-right-panel'),
-                detailsPanel: $('#category-details'),
-                stats: {
-                    totalCategories: $('#total-categories')
-                }
-            };
+           // Tambahkan load tombol tambah category
+           $.ajax({
+               url: wpEquipmentData.ajaxUrl,
+               type: 'POST',
+               data: {
+                   action: 'create_category_button',
+                   nonce: wpEquipmentData.nonce
+               },
+               success: (response) => {
+                   if (response.success) {
+                       $('#tombol-tambah-category').html(response.data.button);
+                       
+                       // Bind click event using delegation
+                       $('#tombol-tambah-category').off('click', '#add-category-btn')
+                           .on('click', '#add-category-btn', () => {
+                               if (window.CreateCategoryForm) {
+                                   window.CreateCategoryForm.showModal();
+                               }
+                           });
+                   }
+               }
+           });
 
-            this.initializePanels();
-            this.bindCoreEvents();
-            this.handleInitialState();
-        },
+           this.bindEvents();
+           this.handleInitialState();
+           this.loadStats();
+           
+           // Update stats setelah operasi CRUD
+           $(document)
+               .on('category:created.Category', () => this.loadStats())
+               .on('category:deleted.Category', () => this.loadStats())
+               .on('branch:created.Category', () => this.loadStats())
+               .on('branch:deleted.Category', () => this.loadStats())
+               .on('employee:created.Category', () => this.loadStats())
+               .on('employee:deleted.Category', () => this.loadStats());
+       },
 
-        // Panel Initialization
-        initializePanels() {
-            // Setup panel visibility classes
-            this.components.rightPanel.addClass('panel-initialized');
-            
-            // Initialize tab navigation
-            $('.nav-tab-wrapper .nav-tab').first().addClass('nav-tab-active');
-            $('.tab-content').first().addClass('active');
-            
-            // Setup panel close button
-            $('.wp-equipment-close-panel').on('click', () => this.closePanel());
-        },
+        bindEvents() {
+            // Unbind existing events first to prevent duplicates
+            $(document)
+                .off('.Category')
+                .on('category:created.Category', (e, data) => this.handleCreated(data))
+                .on('category:updated.Category', (e, data) => this.handleUpdated(data))
+                .on('category:deleted.Category', () => this.handleDeleted())
+                .on('category:display.Category', (e, data) => this.displayData(data))
+                .on('category:loading.Category', () => this.showLoading())
+                .on('category:loaded.Category', () => this.hideLoading());
 
-        // Core Event Binding
-        bindCoreEvents() {
+            // Panel events
+            $('.wp-equipment-close-panel').off('click').on('click', () => this.closePanel());
+
             // Panel navigation
             $('.nav-tab').off('click').on('click', (e) => {
                 e.preventDefault();
                 this.switchTab($(e.currentTarget).data('tab'));
             });
 
-            // Hash change handling
-            $(window).off('hashchange.Category').on('hashchange.Category', () => {
-                this.handleHashChange();
-            });
-
-            // Panel state events
-            $(document).off('panel:closed.Category').on('panel:closed.Category', () => {
-                this.resetPanelState();
-            });
-
-            // Escape key handler
-            $(document).on('keyup', (e) => {
-                if (e.key === 'Escape' && this.components.rightPanel.is(':visible')) {
-                    this.closePanel();
-                }
-            });
+            // Window events
+            $(window).off('hashchange.Category').on('hashchange.Category', () => this.handleHashChange());
         },
 
-        // Initial State Handler
-        handleInitialState() {
-            const hash = window.location.hash;
-            if (hash && hash.startsWith('#')) {
-                const id = hash.substring(1);
-                if (id && !isNaN(id)) {
-                    this.currentId = parseInt(id);
-                    this.loadCategoryData(this.currentId);
-                }
-            }
-        },
+           validateCategoryAccess(categoryId, onSuccess, onError) {
+               $.ajax({
+                   url: wpEquipmentData.ajaxUrl,
+                   type: 'POST',
+                   data: {
+                       action: 'validate_category_access',
+                       id: categoryId,
+                       nonce: wpEquipmentData.nonce
+                   },
+                   success: (response) => {
+                       if (response.success) {
+                           if (onSuccess) onSuccess(response.data);
+                       } else {
+                           if (onError) onError(response.data);
+                       }
+                   },
+                   error: (xhr) => {
+                       if (onError) onError({
+                           message: 'Terjadi kesalahan saat validasi akses',
+                           code: 'server_error'
+                       });
+                   }
+               });
+           },
+           
+       handleInitialState() {
+           const hash = window.location.hash;
+           if (hash && hash.startsWith('#')) {
+               const categoryId = parseInt(hash.substring(1));
+               if (categoryId) {
+                   this.validateCategoryAccess(
+                       categoryId,
+                       (data) => this.loadCategoryData(categoryId),
+                       (error) => {
+                           window.location.href = 'admin.php?page=wp-equipment-categories';
+                           EquipmentToast.error(error.message);
+                       }
+                   );
+               }
+           }
+       },
 
-        // Tab Management
-        switchTab(tabId) {
-            // Validate tab existence
-            if (!tabId || !$(`#${tabId}`).length) {
-                console.error('Invalid tab ID:', tabId);
-                return;
-            }
-
-            // Update active states
-            $('.nav-tab').removeClass('nav-tab-active');
-            $(`.nav-tab[data-tab="${tabId}"]`).addClass('nav-tab-active');
-
-            $('.tab-content').removeClass('active').hide();
-            $(`#${tabId}`).addClass('active').show();
-
-            // Trigger tab change event
-            $(document).trigger('category:tabChanged', [tabId]);
-        },
-
-        // Panel State Management
-        showPanel() {
-            this.components.container.addClass('with-right-panel');
-            this.components.rightPanel
-                .addClass('visible')
-                .removeClass('loading');
-        },
-
-        closePanel() {
-            this.components.container.removeClass('with-right-panel');
-            this.components.rightPanel.removeClass('visible');
-            this.currentId = null;
-            
-            // Clear hash without triggering reload
-            if (window.history.pushState) {
-                window.history.pushState('', '/', window.location.pathname + window.location.search);
-            } else {
-                window.location.hash = '';
-            }
-
-            $(document).trigger('panel:closed');
-        },
-
-        resetPanelState() {
-            // Reset all form states
-            $('.tab-content').removeClass('active');
-            $('#category-details').addClass('active');
-            
-            // Reset tab navigation
-            $('.nav-tab').removeClass('nav-tab-active');
-            $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
-            
-            // Clear any highlighted rows
-            $('#categories-table tr').removeClass('highlight');
-        },
-
-        // Loading State Management
-        showLoading() {
-            this.isLoading = true;
-            this.components.rightPanel.addClass('loading');
-            
-            // Add loading overlay if needed
-            if (!this.components.rightPanel.find('.loading-overlay').length) {
-                this.components.rightPanel.append(`
-                    <div class="loading-overlay">
-                        <span class="spinner is-active"></span>
-                    </div>
-                `);
-            }
-        },
-
-        hideLoading() {
-            this.isLoading = false;
-            this.components.rightPanel.removeClass('loading');
-            this.components.rightPanel.find('.loading-overlay').remove();
-        },
-
-        // Hash Change Handler
         handleHashChange() {
+            console.log('Hash changed to:', window.location.hash); // Debug 4
             const hash = window.location.hash;
-            
             if (!hash) {
                 this.closePanel();
                 return;
@@ -212,32 +174,26 @@
 
             const id = hash.substring(1);
             if (id && id !== this.currentId) {
-                this.loadCategoryData(parseInt(id));
+                $('.tab-content').removeClass('active');
+                $('#category-details').addClass('active');
+                $('.nav-tab').removeClass('nav-tab-active');
+                $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
+                
+                console.log('Get category data for ID:', id); // Debug 5
+
+                this.loadCategoryData(id);
             }
         },
 
-        // Error Handler
-        handleError(error, context = '') {
-            console.error(`Category Error [${context}]:`, error);
-            EquipmentToast.error(
-                error?.responseJSON?.message || 
-                error?.message || 
-                'Terjadi kesalahan dalam memproses permintaan'
-            );
-        }
-    };
-
-
-    // Extend the Category object with data management methods
-    $.extend(Category, {
-        // Data Loading Methods
         async loadCategoryData(id) {
             if (!id || this.isLoading) return;
-
+        
+            this.isLoading = true;
             this.showLoading();
-            console.log('Loading category data for ID:', id);
-
+        
             try {
+                console.log('Loading category data for ID:', id);
+        
                 const response = await $.ajax({
                     url: wpEquipmentData.ajaxUrl,
                     type: 'POST',
@@ -247,451 +203,385 @@
                         nonce: wpEquipmentData.nonce
                     }
                 });
-
+        
+                console.log('Category data response:', response);
+        
                 if (response.success && response.data) {
-                    // Update URL hash tanpa trigger reload
+                    // Update URL hash tanpa reload
                     const newHash = `#${id}`;
                     if (window.location.hash !== newHash) {
                         window.history.pushState(null, '', newHash);
                     }
-
-                    // Reset ke tab details
-                    this.switchTab('category-details');
+        
+                    // Reset tab ke default (Details)
+                    $('.nav-tab').removeClass('nav-tab-active');
+                    $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
                     
-                    // Update UI dengan data baru
+                    // Sembunyikan semua konten tab
+                    $('.tab-content').removeClass('active').hide();
+                    // Tampilkan tab details
+                    $('#category-details').addClass('active').show();
+        
+                    // Update UI dengan data kategori
                     this.displayData(response.data);
                     this.currentId = id;
-
-                    // Trigger success event
+        
+                    // Trigger event success
                     $(document).trigger('category:loaded', [response.data]);
                 } else {
                     throw new Error(response.data?.message || 'Failed to load category data');
                 }
             } catch (error) {
-                this.handleError(error, 'loadCategoryData');
+                console.error('Error loading category:', error);
+                EquipmentToast.error(error.message || 'Failed to load category data');
                 this.handleLoadError();
             } finally {
+                this.isLoading = false;
                 this.hideLoading();
             }
         },
 
-        // Display Methods
-        displayData(data) {
-            if (!data?.category) {
-                console.error('Invalid category data:', data);
-                return;
-            }
-
-            const category = data.category;
-            console.log('Displaying category data:', category);
-
-            try {
-                // Show right panel first
-                this.showPanel();
-
-                // Basic Information
-                $('#category-header-name').text(category.name);
-                $('#category-code').text(category.code || '-');
-                $('#category-name').text(category.name || '-');
-                $('#category-description').text(category.description || '-');
-
-                // Hierarchy Information
-                $('#category-level').text(this.getLevelLabel(category.level));
-                $('#category-parent').text(category.parent_name || '-');
-                $('#category-sort-order').text(category.sort_order || '0');
-
-                // Product Information
-                $('#category-unit').text(category.unit || '-');
-                $('#category-price').text(category.price ? 
-                    new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR'
-                    }).format(category.price) : '-'
-                );
-
-                // Timeline Information
-                $('#category-created-by').text(category.created_by_name || '-');
-                $('#category-created-at').text(category.created_at || '-');
-                $('#category-updated-at').text(category.updated_at || '-');
-
-                // Highlight DataTable row if exists
-                if (window.CategoryDataTable) {
-                    window.CategoryDataTable.highlightRow(category.id);
-                }
-
-                // Update hierarchy section if exists
-                if (data.hierarchy) {
-                    this.updateHierarchyView(data.hierarchy);
-                }
-
-                // Trigger display event
-                $(document).trigger('category:displayed', [category]);
-
-            } catch (error) {
-                this.handleError(error, 'displayData');
-                EquipmentToast.error('Error menampilkan data kategori');
-            }
-        },
-
-        // Stats Management
-        async loadStats() {
-            try {
-                const response = await $.ajax({
-                    url: wpEquipmentData.ajaxUrl,
-                    type: 'POST',
-                    data: {
-                        action: 'get_category_stats',
-                        nonce: wpEquipmentData.nonce
-                    }
-                });
-
-                if (response.success) {
-                    this.updateStats(response.data);
-                } else {
-                    throw new Error(response.data?.message || 'Failed to load stats');
-                }
-            } catch (error) {
-                this.handleError(error, 'loadStats');
-            }
-        },
-
-        updateStats(stats) {
-            // Update total categories
-            this.components.stats.totalCategories.text(
-                stats.total_categories?.toLocaleString() || '0'
-            );
-
-            // Update recent categories if available
-            if (stats.recentlyAdded && Array.isArray(stats.recentlyAdded)) {
-                this.updateRecentCategories(stats.recentlyAdded);
-            }
-
-            // Trigger stats updated event
-            $(document).trigger('category:statsUpdated', [stats]);
-        },
-
-        // Helper Methods
-        getLevelLabel(level) {
-            const labels = {
-                1: 'Level 1 - Kategori Utama',
-                2: 'Level 2 - Sub Kategori',
-                3: 'Level 3 - Tipe Layanan'
-            };
-            return labels[level] || `Level ${level}`;
-        },
-
-        updateHierarchyView(hierarchy) {
-            const $container = $('#category-hierarchy');
-            if (!$container.length) return;
-
-            const buildHierarchyHtml = (items) => {
-                let html = '<ul class="category-tree">';
-                items.forEach(item => {
-                    html += `
-                        <li class="category-item" data-id="${item.id}">
-                            <div class="category-info">
-                                <span class="category-code">${item.code}</span>
-                                <span class="category-name">${item.name}</span>
-                                ${item.unit || item.price ? `
-                                    <small class="category-meta">
-                                        ${item.unit ? `<span class="unit">${item.unit}</span>` : ''}
-                                        ${item.price ? `<span class="price">${
-                                            new Intl.NumberFormat('id-ID', {
-                                                style: 'currency',
-                                                currency: 'IDR'
-                                            }).format(item.price)
-                                        }</span>` : ''}
-                                    </small>
-                                ` : ''}
-                            </div>
-                            ${item.children ? buildHierarchyHtml(item.children) : ''}
-                        </li>
-                    `;
-                });
-                html += '</ul>';
-                return html;
-            };
-
-            $container.html(buildHierarchyHtml(hierarchy));
-        },
-
-        updateRecentCategories(categories) {
-            const $container = $('#recent-categories');
-            if (!$container.length) return;
-
-            let html = '<ul class="recent-list">';
-            categories.forEach(category => {
-                html += `
-                    <li class="recent-item" data-id="${category.id}">
-                        <strong>${category.code}</strong>
-                        <span class="recent-name">${category.name}</span>
-                        <small class="recent-date">${category.created_at}</small>
-                    </li>
-                `;
-            });
-            html += '</ul>';
-
-            $container.html(html);
-        },
-
-        handleLoadError() {
-            this.components.detailsPanel.html(`
-                <div class="error-message">
-                    <p>Gagal memuat data kategori. Silakan coba lagi.</p>
-                    <button class="button retry-load">Coba Lagi</button>
-                </div>
-            `);
-
-            // Bind retry button
-            $('.retry-load').on('click', () => {
-                if (this.currentId) {
-                    this.loadCategoryData(this.currentId);
-                }
-            });
+       displayData(data) {
+        if (!data?.category) {
+            console.error('Invalid category data:', data);
+            return;
         }
-    });
-
-
-    // Extend the Category object with event and integration methods
-    $.extend(Category, {
-        // Event Binding Methods
-        bindEvents() {
-            // Unbind existing events first
-            $(document)
-                .off('.CategoryEvent')
-                .on('category:created.CategoryEvent', (e, data) => this.handleCreated(data))
-                .on('category:updated.CategoryEvent', (e, data) => this.handleUpdated(data))
-                .on('category:deleted.CategoryEvent', () => this.handleDeleted())
-                .on('category:loading.CategoryEvent', () => this.showLoading())
-                .on('category:loaded.CategoryEvent', () => this.hideLoading())
-                .on('category:tabChanged.CategoryEvent', (e, tabId) => this.handleTabChange(tabId));
-
-            // Demo data generation button
-            $('#generate-demo-categories-btn').on('click', () => this.handleGenerateDemo());
-
-            // Retry button for error states
-            $(document).on('click', '.retry-load', () => {
-                if (this.currentId) {
-                    this.loadCategoryData(this.currentId);
-                }
-            });
-
-            // Panel actions
-            $(document).on('click', '.category-action-button', (e) => {
-                const action = $(e.currentTarget).data('action');
-                const id = $(e.currentTarget).data('id');
-                this.handlePanelAction(action, id);
-            });
-
-            // Tree view expand/collapse
-            $('.expand-all').on('click', () => this.expandAllNodes());
-            $('.collapse-all').on('click', () => this.collapseAllNodes());
-        },
-
-        // CRUD Event Handlers
-        handleCreated(data) {
-            if (data && data.id) {
-                window.location.hash = data.id;
-                this.loadCategoryData(data.id);
-            }
-
-            // Refresh DataTable
+    
+        console.log('Displaying category data:', data);
+    
+        try {
+            // PENTING: Tampilkan panel terlebih dahulu
+            this.components.container.addClass('with-right-panel');
+            this.components.rightPanel.addClass('visible');
+    
+            // Basic Information
+            $('#category-header-name').text(data.category.name);
+            $('#category-code').text(data.category.code || '-');
+            $('#category-name').text(data.category.name || '-');
+            $('#category-description').text(data.category.description || '-');
+    
+            // Level information
+            $('#category-level').text(this.getLevelLabel(data.category.level));
+            $('#category-parent').text(data.category.parent_name || '-');
+            $('#category-sort-order').text(data.category.sort_order || '0');
+    
+            // Product Information
+            $('#category-unit').text(data.category.unit || '-');
+            $('#category-price').text(data.category.price ? 
+                new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(data.category.price) : '-'
+            );
+    
+            // Timeline Information
+            $('#category-created-by').text(data.category.created_by_name || '-');
+            $('#category-created-at').text(data.category.created_at || '-');
+            $('#category-updated-at').text(data.category.updated_at || '-');
+    
+            // Highlight baris di DataTable jika ada
             if (window.CategoryDataTable) {
-                window.CategoryDataTable.refresh();
+                window.CategoryDataTable.highlightRow(data.category.id);
             }
+    
+            // Trigger event displayed
+            $(document).trigger('category:displayed', [data]);
+    
+        } catch (error) {
+            console.error('Error displaying category data:', error);
+            EquipmentToast.error('Error menampilkan data kategori');
+        }
+    }, 
 
-            // Reload stats
-            this.loadStats();
+   handleLoadError() {
+       this.components.detailsPanel.html(
+           '<div class="error-message">' +
+           '<p>Failed to load category data. Please try again.</p>' +
+           '<button class="button retry-load">Retry</button>' +
+           '</div>'
+       );
+   },
+  
+     getLevelLabel(level) {
+        const labels = {
+            1: 'Level 1 - Kategori Utama',
+            2: 'Level 2 - Sub Kategori',
+            3: 'Level 3 - Tipe Layanan'
+        };
+        return labels[level] || `Level ${level}`;
+    },
+             // Helper function untuk label capability
+           getCapabilityLabel(cap) {
+               const labels = {
+                   'can_add_staff': 'Dapat menambah staff',
+                   'can_export': 'Dapat export data',
+                   'can_bulk_import': 'Dapat bulk import'
+               };
+               return labels[cap] || cap;
+           },
+
+           // Helper function untuk logika tampilan tombol upgrade
+           shouldShowUpgradeOption(currentLevel, targetLevel) {
+               const levels = ['regular', 'priority', 'utama'];
+               const currentIdx = levels.indexOf(currentLevel);
+               const targetIdx = levels.indexOf(targetLevel);
+               return targetIdx > currentIdx;
+           },
+
+           switchTab(tabId) {
+            // Hapus tab yang aktif sebelumnya
+            $('.nav-tab').removeClass('nav-tab-active');
+            $(`.nav-tab[data-tab="${tabId}"]`).addClass('nav-tab-active');
+        
+            // Sembunyikan semua konten tab
+            $('.tab-content').hide();
+            
+            // Tampilkan konten tab yang dipilih
+            $(`#${tabId}`).show();
+        
+            // Handle konten tab spesifik
+            switch(tabId) {
+                case 'category-details':
+                    // Tab details sudah memiliki konten statis dari template
+                    break;
+                    
+                case 'category-hierarchy':
+                    // Tampilkan pesan "sedang dikembangkan"
+                    $('#category-hierarchy').html(`
+                        <div class="notice notice-info">
+                            <p>${wpEquipmentData.texts.development_notice || 'Fitur ini sedang dalam pengembangan'}</p>
+                        </div>
+                    `);
+                    break;
+                    
+                default:
+                    console.warn('Tab tidak dikenal:', tabId);
+                    break;
+            }
+        
+            // Trigger event ketika tab berubah
+            $(document).trigger('category:tabChanged', [tabId]);
         },
 
-        handleUpdated(data) {
-            if (data && data.data && data.data.category) {
-                const editedCategoryId = data.data.category.id;
-                
-                if (editedCategoryId === parseInt(window.location.hash.substring(1))) {
-                    // Update panel if current category
-                    this.displayData(data.data);
-                } else {
-                    // Change to edited category
-                    window.location.hash = editedCategoryId;
-                }
-            }
-
-            // Refresh DataTable
-            if (window.CategoryDataTable) {
-                window.CategoryDataTable.refresh();
-            }
-
-            // Reload stats
-            this.loadStats();
+        closePanel() {
+            this.components.container.removeClass('with-right-panel');
+            this.components.rightPanel.removeClass('visible');
+            this.currentId = null;
+            window.location.hash = '';
+            $(document).trigger('panel:closed');
         },
 
-        handleDeleted() {
-            this.closePanel();
+        showLoading() {
+            this.components.rightPanel.addClass('loading');
+        },
+
+        hideLoading() {
+            this.components.rightPanel.removeClass('loading');
+        },
+
+
+
+       handleCreated(data) {
+        if (data && data.data && data.data.id) {
+            // Update hash
+            window.location.hash = data.data.id;
+            
+            // Reset dan aktifkan tab details
+            $('.nav-tab').removeClass('nav-tab-active');
+            $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
+            $('.tab-content').removeClass('active').hide();
+            $('#category-details').addClass('active').show();
+            
+            // Buka panel kanan
+            $('.wp-category-container').addClass('with-right-panel');
+            $('.wp-category-right-panel').addClass('visible');
             
             // Refresh DataTable
             if (window.CategoryDataTable) {
                 window.CategoryDataTable.refresh();
             }
+        }
+    },
 
-            // Reload stats
-            this.loadStats();
-        },
+    handleUpdated(response) {
+        if (response && response.data && response.data.category) {
+            const editedCategoryId = response.data.category.id;
+            
+            // Update hash jika belum sesuai
+            if (window.location.hash !== `#${editedCategoryId}`) {
+                window.location.hash = editedCategoryId;
+            }
+            
+            // Reset dan aktifkan tab details
+            $('.nav-tab').removeClass('nav-tab-active');
+            $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
+            $('.tab-content').removeClass('active').hide();
+            $('#category-details').addClass('active').show();
+            
+            // Buka panel kanan
+            $('.wp-category-container').addClass('with-right-panel');
+            $('.wp-category-right-panel').addClass('visible');
+            
+            // Update display data
+            this.displayData(response.data);
+            
+            // Refresh DataTable
+            if (window.CategoryDataTable) {
+                window.CategoryDataTable.refresh();
+            }
+        }
+    },
+          
 
-        // Tab Change Handler
-        handleTabChange(tabId) {
-            switch(tabId) {
-                case 'category-hierarchy':
-                    this.loadHierarchyData();
-                    break;
-                    
-                // Add more tab specific handlers here
+        handleDeleted() {
+            this.closePanel();
+            if (window.CategoryDataTable) {
+                window.CategoryDataTable.refresh();
+            }
+            if (window.Dashboard) {
+               window.Dashboard.loadStats(); // Gunakan loadStats() langsung
             }
         },
 
-        // Demo Data Generator
-        async handleGenerateDemo() {
-            try {
-                const response = await $.ajax({
-                    url: wpEquipmentData.ajaxUrl,
-                    type: 'POST',
-                    data: {
-                        action: 'generate_demo_categories',
-                        nonce: wpEquipmentData.nonce
-                    }
-                });
 
-                if (response.success) {
-                    EquipmentToast.success('Data demo berhasil dibuat');
-                    
-                    // Refresh components
-                    if (window.CategoryDataTable) {
-                        window.CategoryDataTable.refresh();
-                    }
-                    this.loadStats();
-                } else {
-                    throw new Error(response.data?.message || 'Gagal membuat data demo');
-                }
-            } catch (error) {
-                this.handleError(error, 'generateDemo');
-            }
-        },
+       /**
+        * Load category statistics including total categories and branches.
+        * Uses getCurrentCategoryId() to determine which category's stats to load.
+        * Updates stats display via updateStats() when data is received.
+        * 
+        * @async
+        * @fires category:loading When stats loading begins
+        * @fires category:loaded When stats are successfully loaded
+        * @see getCurrentCategoryId
+        * @see updateStats
+        * 
+        * @example
+        * // Load stats on page load 
+        * Category.loadStats();
+        * 
+        * // Load stats after category creation
+        * $(document).on('category:created', () => Category.loadStats());
+        */
+       async loadStats() {
+           const hash = window.location.hash;
+           const categoryId = hash ? parseInt(hash.substring(1)) : 0;
+           
+           $.ajax({
+               url: wpEquipmentData.ajaxUrl,
+               type: 'POST',
+               data: {
+                   action: 'get_category_stats',
+                   nonce: wpEquipmentData.nonce,
+                   id: categoryId
+               },
+               success: (response) => {
+                   if (response.success) {
+                       this.updateStats(response.data);
+                   }
+               }
+           });
+       },
 
-        // Tree View Methods
-        expandAllNodes() {
-            $('.category-tree li').addClass('expanded');
-            $('.category-tree ul').show();
-        },
+       updateStats(stats) {
+           $('#total-categories').text(stats.total_categories);
+           $('#total-branches').text(stats.total_branches);
+           $('#total-employees').text(stats.total_employees);
+       }
 
-        collapseAllNodes() {
-            $('.category-tree li').removeClass('expanded');
-            $('.category-tree ul').hide();
-        },
+    };
 
-        // Panel Action Handler
-        handlePanelAction(action, id) {
-            if (!action || !id) return;
+       $('.wp-mpdf-category-detail-export-pdf').on('click', function() {
+           const categoryId = $('#current-category-id').val();
+           
+           $.ajax({
+               url: wpEquipmentData.ajaxUrl,
+               type: 'POST',
+               data: {
+                   action: 'generate_category_pdf',
+                   id: categoryId,
+                   nonce: wpEquipmentData.nonce
+               },
+               xhrFields: {
+                   responseType: 'blob'
+               },
+               success: function(response) {
+                   const blob = new Blob([response], { type: 'application/pdf' });
+                   const url = window.URL.createObjectURL(blob);
+                   const a = document.createElement('a');
+                   a.href = url;
+                   a.download = `category-${categoryId}.pdf`;
+                   document.body.appendChild(a);
+                   a.click();
+                   window.URL.revokeObjectURL(url);
+               },
+               error: function() {
+                   EquipmentToast.error('Failed to generate PDF');
+               }
+           });
+       });
 
-            switch(action) {
-                case 'edit':
-                    if (window.CategoryForm) {
-                        window.CategoryForm.showEditForm(id);
-                    }
-                    break;
+       // Document generation handlers
+       $('.wp-docgen-category-detail-expot-document').on('click', function() {
+           const categoryId = $('#current-category-id').val();
+           
+           $.ajax({
+               url: wpEquipmentData.ajaxUrl,
+               type: 'POST',
+               data: {
+                   action: 'generate_wp_docgen_category_detail_document',
+                   id: categoryId,
+                   nonce: wpEquipmentData.nonce
+               },
+               success: function(response) {
+                   if (response.success) {
+                       // Create hidden link and trigger download
+                       const a = document.createElement('a');
+                       a.href = response.data.file_url;
+                       a.download = response.data.filename;
+                       document.body.appendChild(a);
+                       a.click();
+                       document.body.removeChild(a);
+                   } else {
+                       EquipmentToast.error(response.data.message || 'Failed to generate DOCX');
+                   }
+               },
+               error: function() {
+                   EquipmentToast.error('Failed to generate DOCX');
+               }
+           });
+       });
 
-                case 'delete':
-                    if (window.CategoryDataTable) {
-                        window.CategoryDataTable.confirmDelete(id);
-                    }
-                    break;
+       $('.wp-docgen-category-detail-expot-pdf').on('click', function() {
+           const categoryId = $('#current-category-id').val();
+           
+           $.ajax({
+               url: wpEquipmentData.ajaxUrl,
+               type: 'POST',
+               data: {
+                   action: 'generate_wp_docgen_category_detail_pdf',
+                   id: categoryId,
+                   nonce: wpEquipmentData.nonce
+               },
+               success: function(response) {
+                   if (response.success) {
+                       // Create hidden link and trigger download
+                       const a = document.createElement('a');
+                       a.href = response.data.file_url;
+                       a.download = response.data.filename;
+                       document.body.appendChild(a);
+                       a.click();
+                       document.body.removeChild(a);
+                   } else {
+                       EquipmentToast.error(response.data.message || 'Failed to generate PDF');
+                   }
+               },
+               error: function() {
+                   EquipmentToast.error('Failed to generate PDF');
+               }
+           });
+       });
 
-                case 'view-hierarchy':
-                    this.switchTab('category-hierarchy');
-                    break;
-            }
-        },
-
-        // Hierarchy Data Loader
-        async loadHierarchyData() {
-            if (!this.currentId) return;
-
-            try {
-                const response = await $.ajax({
-                    url: wpEquipmentData.ajaxUrl,
-                    type: 'POST',
-                    data: {
-                        action: 'get_category_hierarchy',
-                        id: this.currentId,
-                        nonce: wpEquipmentData.nonce
-                    }
-                });
-
-                if (response.success) {
-                    this.updateHierarchyView(response.data.hierarchy);
-                } else {
-                    throw new Error(response.data?.message || 'Gagal memuat data hierarki');
-                }
-            } catch (error) {
-                this.handleError(error, 'loadHierarchy');
-            }
-        },
-
-        // Integration Methods
-        validateDependencies() {
-            const dependencies = {
-                'CategoryDataTable': window.CategoryDataTable,
-                'CategoryForm': window.CategoryForm,
-                'EquipmentToast': window.EquipmentToast
-            };
-
-            let missing = [];
-            for (const [name, component] of Object.entries(dependencies)) {
-                if (!component) {
-                    missing.push(name);
-                }
-            }
-
-            if (missing.length > 0) {
-                console.error('Missing dependencies:', missing.join(', '));
-                return false;
-            }
-
-            return true;
-        },
-
-        // Override init method to include event binding
-        init() {
-            // Initialize base components
-            this.components = {
-                container: $('.wp-equipment-container'),
-                rightPanel: $('.wp-equipment-right-panel'),
-                detailsPanel: $('#category-details'),
-                stats: {
-                    totalCategories: $('#total-categories')
-                }
-            };
-
-            // Validate dependencies
-            if (!this.validateDependencies()) {
-                console.error('Category initialization failed: missing dependencies');
-                return;
-            }
-
-            // Initialize panels and core events
-            this.initializePanels();
-            this.bindCoreEvents();
-            this.handleInitialState();
-
-            // Bind extended events
-            this.bindEvents();
-
-            // Load initial stats
-            this.loadStats();
-
-            console.log('Category management fully initialized');
-        },
-    });
-    
+       
     // Initialize when document is ready
     $(document).ready(() => {
         window.Category = Category;
