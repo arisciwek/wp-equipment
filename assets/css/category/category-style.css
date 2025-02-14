@@ -728,3 +728,63 @@ div#categorys-table_length select {
 .plan-features li .feature-status {
     color: #2271b1;
 }
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;  /* Harus fixed, bukan absolute */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999999;  /* Z-index tinggi agar di atas konten lain */
+    display: flex;    /* Flexbox untuk centering */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Container */
+.modal-container {
+    background: #fff;
+    border-radius: 4px;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    margin: 30px auto;  /* Auto margin untuk centering */
+    position: relative;  /* Untuk posisi close button */
+    max-height: 90vh;   /* Maksimal 90% tinggi viewport */
+    overflow-y: auto;   /* Scroll jika konten terlalu panjang */
+}
+
+/* Modal Header */
+.modal-header {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Close Button */
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #666;
+}
+
+/* Modal Content */
+.modal-content {
+    padding: 15px;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+}
