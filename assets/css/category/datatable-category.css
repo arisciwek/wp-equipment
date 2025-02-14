@@ -13,21 +13,15 @@
 .dataTables_wrapper {
     position: relative;
     clear: both;
-    margin: 20px 0;
+    margin: 0; /* Hapus margin 20px 0 */
+    width: 100%;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    padding: 20px;
+    padding: 0; /* Hapus padding 20px */
 }
 
-/* Top Controls Layout */
+/* Wrapper untuk search & length */
 .dataTables_wrapper .top-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
+    margin: 10px;  /* Berikan margin yang lebih kecil */
 }
 
 /* Length & Filter Controls */
@@ -268,4 +262,52 @@
 #categories-table tbody tr.highlight {
     background-color: #fef8e3 !important;
     transition: background-color 0.3s ease;
+}
+
+
+.button.view-category,
+.button.edit-category,
+.button.delete-category {
+    padding: 4px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.button.view-category:hover,
+.button.edit-category:hover {
+    background: #f0f0f1;
+    border-color: #0a4b78;
+}
+
+.button.delete-category {
+    color: #d63638;
+}
+
+.button.delete-category:hover {
+    background: #fff5f5;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+@media screen and (max-width: 782px) {
+    .wp-category-content {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Table Structure */
+#categories-table {
+    width: 100% !important; /* Force full width */
+    margin: 0; /* Hapus margin 15px 0 */
+}
+
+/* Pagination area */
+.dataTables_paginate {
+    margin: 10px; /* Sesuaikan margin pagination */
 }
