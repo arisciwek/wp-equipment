@@ -122,66 +122,46 @@
             $(window).off('hashchange.Category').on('hashchange.Category', () => this.handleHashChange());
         },
 
-           validateCategoryAccess(categoryId, onSuccess, onError) {
-               $.ajax({
-                   url: wpEquipmentData.ajaxUrl,
-                   type: 'POST',
-                   data: {
-                       action: 'validate_category_access',
-                       id: categoryId,
-                       nonce: wpEquipmentData.nonce
-                   },
-                   success: (response) => {
-                       if (response.success) {
-                           if (onSuccess) onSuccess(response.data);
-                       } else {
-                           if (onError) onError(response.data);
-                       }
-                   },
-                   error: (xhr) => {
-                       if (onError) onError({
-                           message: 'Terjadi kesalahan saat validasi akses',
-                           code: 'server_error'
-                       });
-                   }
-               });
-           },
+        validateCategoryAccess(categoryId, onSuccess, onError) {
+            $.ajax({
+                url: wpEquipmentData.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'validate_category_access',
+                    id: categoryId,
+                    nonce: wpEquipmentData.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        if (onSuccess) onSuccess(response.data);
+                    } else {
+                        if (onError) onError(response.data || { message: 'Access validation failed' });
+                    }
+                },
+                error: (xhr) => {
+                    console.error('Validation error:', xhr);
+                    if (onError) onError({
+                        message: 'Terjadi kesalahan saat validasi akses',
+                        code: 'server_error'
+                    });
+                }
+            });
+        },
            
-       handleInitialState() {
-           const hash = window.location.hash;
-           if (hash && hash.startsWith('#')) {
-               const categoryId = parseInt(hash.substring(1));
-               if (categoryId) {
-                   this.validateCategoryAccess(
-                       categoryId,
-                       (data) => this.loadCategoryData(categoryId),
-                       (error) => {
-                           window.location.href = 'admin.php?page=wp-equipment-categories';
-                           EquipmentToast.error(error.message);
-                       }
-                   );
-               }
-           }
-       },
+        handleInitialState() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#')) {
+                this.handleHashChange();
+            }
+        },
 
         handleHashChange() {
-            console.log('Hash changed to:', window.location.hash); // Debug 4
             const hash = window.location.hash;
-            if (!hash) {
-                this.closePanel();
-                return;
-            }
-
-            const id = hash.substring(1);
-            if (id && id !== this.currentId) {
-                $('.tab-content').removeClass('active');
-                $('#category-details').addClass('active');
-                $('.nav-tab').removeClass('nav-tab-active');
-                $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
-                
-                console.log('Get category data for ID:', id); // Debug 5
-
-                this.loadCategoryData(id);
+            if (hash) {
+                const id = hash.substring(1);
+                if (id) {
+                    this.loadCategoryData(id);
+                }
             }
         },
 

@@ -40,7 +40,7 @@ defined('ABSPATH') || exit;
 if (!function_exists('wp_equipment_render_confirmation_modal')) {
     function wp_equipment_render_confirmation_modal() {
         ?>
-        <div id="confirmation-modal" class="modal-overlay" aria-modal="true" role="dialog">
+        <div id="confirmation-modal" class="modal-overlay hidden" aria-modal="true" role="dialog" style="display: none;">
             <div class="modal" role="document">
                 <!-- Header -->
                 <div class="modal-header">

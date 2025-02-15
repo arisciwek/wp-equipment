@@ -48,103 +48,55 @@ const WIModal = {
 
     init() {
         this.modal = document.getElementById('confirmation-modal');
-        if (!this.modal) return;
+        if (!this.modal) {
+            console.error('Modal element not found');
+            return;
+        }
+
+        this.titleElement = document.getElementById('modal-title');
+        this.messageElement = document.getElementById('modal-message');
+        this.confirmBtn = document.getElementById('modal-confirm-btn');
+        this.cancelBtn = document.getElementById('modal-cancel-btn');
+
+        if (!this.titleElement || !this.messageElement || !this.confirmBtn || !this.cancelBtn) {
+            console.error('Required modal elements not found');
+            return;
+        }
 
         this.bindEvents();
     },
 
-    bindEvents() {
-        // Close button clicks
-        this.modal.querySelectorAll('[data-dismiss="modal"]')
-            .forEach(button => {
-                button.addEventListener('click', () => this.hide());
-            });
-
-        // ESC key press
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.options?.closeOnEsc) {
-                this.hide();
-            }
-        });
-
-        // Click outside
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal && this.options?.closeOnClickOutside) {
-                this.hide();
-            }
-        });
-    },
-
-    show(options) {
-        this.options = {
-            closeOnEsc: true,
-            closeOnClickOutside: true,
-            ...options
-        };
-
-        // Set modal content
-        this.setContent(this.options);
-
-        // Show modal
-        this.modal.classList.add('active');
-
-        // Focus management
-        const confirmBtn = document.getElementById('modal-confirm-btn');
-        if (confirmBtn) {
-            confirmBtn.focus();
-        }
-    },
-
-    hide() {
-        this.modal.classList.remove('active');
-        this.options = null;
-    },
-
     setContent(options) {
-        // Set title
-        document.getElementById('modal-title').textContent = options.title || '';
+        if (!this.modal) return;
 
-        // Set message
-        document.getElementById('modal-message').textContent = options.message || '';
-
-        // Set icon if provided
-        const iconElem = this.modal.querySelector('.modal-icon');
-        if (options.icon) {
-            iconElem.className = `modal-icon dashicons dashicons-${options.icon}`;
+        // Set title dengan pengecekan null
+        if (this.titleElement) {
+            this.titleElement.textContent = options.title || '';
         }
 
-        // Set modal type
-        if (options.type) {
-            this.modal.querySelector('.modal').className =
-                `modal type-${options.type}`;
+        // Set message dengan pengecekan null
+        if (this.messageElement) {
+            this.messageElement.textContent = options.message || '';
         }
 
-        // Set buttons
-        const confirmBtn = document.getElementById('modal-confirm-btn');
-        const cancelBtn = document.getElementById('modal-cancel-btn');
-
-        if (confirmBtn) {
-            confirmBtn.textContent = options.confirmText || 'OK';
-            confirmBtn.className = `button ${options.confirmClass || ''}`;
-            confirmBtn.onclick = () => {
+        // Set buttons dengan pengecekan null
+        if (this.confirmBtn) {
+            this.confirmBtn.textContent = options.confirmText || 'OK';
+            this.confirmBtn.className = `button ${options.confirmClass || ''}`;
+            this.confirmBtn.onclick = () => {
                 if (options.onConfirm) options.onConfirm();
                 this.hide();
             };
         }
 
-        if (cancelBtn) {
-            cancelBtn.textContent = options.cancelText || 'Cancel';
-            cancelBtn.className = `button ${options.cancelClass || ''}`;
-            cancelBtn.onclick = () => {
+        if (this.cancelBtn) {
+            this.cancelBtn.textContent = options.cancelText || 'Cancel';
+            this.cancelBtn.className = `button ${options.cancelClass || ''}`;
+            this.cancelBtn.onclick = () => {
                 if (options.onCancel) options.onCancel();
                 this.hide();
             };
         }
     }
+    // ... rest of the code
 };
-
-// Initialize when document is ready
-document.addEventListener('DOMContentLoaded', () => WIModal.init());
-
-// Make it globally available
-window.WIModal = WIModal;

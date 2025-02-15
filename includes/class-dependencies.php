@@ -197,12 +197,18 @@ class WP_Equipment_Dependencies {
         if ($screen->id === 'wp-equipment_page_wp-equipment-categories') {
             // Core dependencies
             wp_enqueue_script('jquery-validate', 'https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js', ['jquery'], '1.19.5', true);
+
+            wp_enqueue_script('category', 
+                WP_EQUIPMENT_URL . 'assets/js/category/category-script.js', 
+                ['jquery', 'equipment-toast', 'category-datatable', 'category-form', 'confirmation-modal'], 
+                $this->version, 
+                true
+            );
             wp_enqueue_script('datatables', 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js', ['jquery'], '1.13.7', true);
 
             // Components
             wp_enqueue_script('equipment-toast', WP_EQUIPMENT_URL . 'assets/js/components/equipment-toast.js', ['jquery'], $this->version, true);
-            wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
-
+            
             // Category scripts
             wp_enqueue_script('category-form', 
                 WP_EQUIPMENT_URL . 'assets/js/category/category-form.js', 
@@ -211,9 +217,10 @@ class WP_Equipment_Dependencies {
                 true
             );
 
+            wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
             wp_enqueue_script('category-datatable', 
                 WP_EQUIPMENT_URL . 'assets/js/category/category-datatable.js', 
-                ['jquery', 'datatables', 'equipment-toast', 'category-form'], // Tambahkan 'category-form' sebagai dependensi
+                ['jquery', 'datatables', 'equipment-toast', 'category-form', 'confirmation-modal'],
                 $this->version, 
                 true
             );

@@ -52,3 +52,9 @@ defined('ABSPATH') || exit;
     require_once WP_EQUIPMENT_PATH . 'src/Views/templates/category/forms/edit-category-form.php';
     ?>
 </div>
+<!-- Modal Confirmation Templates -->
+<?php
+    if (function_exists('wp_equipment_render_confirmation_modal')) {
+        wp_equipment_render_confirmation_modal();
+    }
+?>
