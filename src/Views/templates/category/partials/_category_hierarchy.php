@@ -25,14 +25,14 @@ defined('ABSPATH') || exit;
                         <div class="category-info">
                             <span class="category-code"><?php echo esc_html($category->code); ?></span>
                             <span class="category-name"><?php echo esc_html($category->name); ?></span>
-                            <?php if (!empty($category->unit) || !empty($category->price)): ?>
+                            <?php if (!empty($category->unit) || !empty($category->pnbp)): ?>
                                 <small class="category-meta">
                                     <?php if (!empty($category->unit)): ?>
                                         <span class="unit"><?php echo esc_html($category->unit); ?></span>
                                     <?php endif; ?>
-                                    <?php if (!empty($category->price)): ?>
-                                        <span class="price">
-                                            <?php echo number_format($category->price, 0, ',', '.'); ?>
+                                    <?php if (!empty($category->pnbp)): ?>
+                                        <span class="pnbp">
+                                            <?php echo number_format($category->pnbp, 0, ',', '.'); ?>
                                         </span>
                                     <?php endif; ?>
                                 </small>
@@ -46,14 +46,14 @@ defined('ABSPATH') || exit;
                                         <div class="category-info">
                                             <span class="category-code"><?php echo esc_html($child->code); ?></span>
                                             <span class="category-name"><?php echo esc_html($child->name); ?></span>
-                                            <?php if (!empty($child->unit) || !empty($child->price)): ?>
+                                            <?php if (!empty($child->unit) || !empty($child->pnbp)): ?>
                                                 <small class="category-meta">
                                                     <?php if (!empty($child->unit)): ?>
                                                         <span class="unit"><?php echo esc_html($child->unit); ?></span>
                                                     <?php endif; ?>
-                                                    <?php if (!empty($child->price)): ?>
-                                                        <span class="price">
-                                                            <?php echo number_format($child->price, 0, ',', '.'); ?>
+                                                    <?php if (!empty($child->pnbp)): ?>
+                                                        <span class="pnbp">
+                                                            <?php echo number_format($child->pnbp, 0, ',', '.'); ?>
                                                         </span>
                                                     <?php endif; ?>
                                                 </small>
@@ -123,7 +123,7 @@ defined('ABSPATH') || exit;
     margin-right: 10px;
 }
 
-.category-meta .price {
+.category-meta .pnbp {
     color: #28a745;
 }
 

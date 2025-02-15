@@ -59,7 +59,7 @@ class CategoryModel {
                 'relation_id' => $data['relation_id'] ?? null,
                 'sort_order' => $data['sort_order'] ?? 0,
                 'unit' => $data['unit'] ?? null,
-                'price' => $data['price'] ?? null,
+                'pnbp' => $data['pnbp'] ?? null,
                 'status' => $data['status'] ?? 'active',
                 'created_by' => get_current_user_id(),
                 'created_at' => current_time('mysql'),
@@ -128,7 +128,7 @@ class CategoryModel {
                 'relation_id' => true,
                 'sort_order' => true,
                 'unit' => true,
-                'price' => true,
+                'pnbp' => true,
                 'status' => true
             ]),
             ['updated_at' => current_time('mysql')]
@@ -153,7 +153,7 @@ class CategoryModel {
                 case 'sort_order':
                     $format[] = '%d';
                     break;
-                case 'price':
+                case 'pnbp':
                     $format[] = '%f';
                     break;
             }
@@ -207,7 +207,7 @@ class CategoryModel {
         }
 
         // Validate order column
-        $validColumns = ['code', 'name', 'level', 'parent_name', 'unit', 'price'];
+        $validColumns = ['code', 'name', 'level', 'parent_name', 'unit', 'pnbp'];
         if (!in_array($orderColumn, $validColumns)) {
             $orderColumn = 'code';
         }
@@ -219,7 +219,7 @@ class CategoryModel {
             'level' => 'c.level',
             'parent_name' => 'p.name',
             'unit' => 'c.unit',
-            'price' => 'c.price'
+            'pnbp' => 'c.pnbp'
         ];
 
         $orderColumn = $orderColumnMap[$orderColumn] ?? 'c.code';

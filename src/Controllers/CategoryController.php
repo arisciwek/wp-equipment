@@ -222,7 +222,7 @@ class CategoryController {
 	        $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
 	        $orderDir = isset($_POST['order'][0]['dir']) ? sanitize_text_field($_POST['order'][0]['dir']) : 'asc';
 
-	        $columns = ['code', 'name', 'level', 'parent_name', 'unit', 'price', 'actions'];
+	        $columns = ['code', 'name', 'level', 'parent_name', 'unit', 'pnbp', 'actions'];
 	        $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'code';
 
 	        if ($orderBy === 'actions') {
@@ -247,7 +247,7 @@ class CategoryController {
 	                        'level' => intval($category->level),
 	                        'parent_name' => $category->parent_name ? esc_html($category->parent_name) : '-',
 	                        'unit' => $category->unit ? esc_html($category->unit) : '-',
-	                        'price' => $category->price ? number_format($category->price, 2) : '-',
+	                        'pnbp' => $category->pnbp ? number_format($category->pnbp, 2) : '-',
 	                        'actions' => $this->generateActionButtons($category)
 	                    ];
 	                }
@@ -329,7 +329,7 @@ class CategoryController {
 	           'parent_id' => !empty($_POST['parent_id']) ? intval($_POST['parent_id']) : null,
 	           'sort_order' => !empty($_POST['sort_order']) ? intval($_POST['sort_order']) : 0,
 	           'unit' => !empty($_POST['unit']) ? sanitize_text_field($_POST['unit']) : null,
-	           'price' => !empty($_POST['price']) ? floatval($_POST['price']) : null
+	           'pnbp' => !empty($_POST['pnbp']) ? floatval($_POST['pnbp']) : null
 	       ];
 
 	       $errors = $this->validator->validateCreate($data);
@@ -394,7 +394,7 @@ class CategoryController {
 				'parent_id' => !empty($_POST['parent_id']) ? intval($_POST['parent_id']) : null,
 				'sort_order' => !empty($_POST['sort_order']) ? intval($_POST['sort_order']) : 0,
 				'unit' => !empty($_POST['unit']) ? sanitize_text_field($_POST['unit']) : null,
-				'price' => !empty($_POST['price']) ? floatval($_POST['price']) : null
+				'pnbp' => !empty($_POST['pnbp']) ? floatval($_POST['pnbp']) : null
 			];
 
 			$errors = $this->validator->validateUpdate($data, $id);
@@ -455,9 +455,9 @@ class CategoryController {
 	        $category->created_at = mysql2date('Y-m-d H:i:s', $category->created_at);
 	        $category->updated_at = mysql2date('Y-m-d H:i:s', $category->updated_at);
 
-	        // Format price jika ada
-	        if ($category->price) {
-	            $category->formatted_price = number_format($category->price, 2, ',', '.');
+	        // Format pnbp jika ada
+	        if ($category->pnbp) {
+	            $category->formatted_pnbp = number_format($category->pnbp, 2, ',', '.');
 	        }
 
 	        // Ambil data creator jika ada

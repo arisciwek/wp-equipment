@@ -37,7 +37,7 @@ defined('ABSPATH') || exit;
                    <th><?php _e('Level', 'wp-equipment'); ?></th>
                    <th><?php _e('Parent', 'wp-equipment'); ?></th>
                    <th><?php _e('Unit', 'wp-equipment'); ?></th>
-                   <th><?php _e('Price', 'wp-equipment'); ?></th>
+                   <th><?php _e('PNBP', 'wp-equipment'); ?></th>
                    <th><?php _e('Actions', 'wp-equipment'); ?></th>
                </tr>
            </thead>

@@ -166,14 +166,14 @@ defined('ABSPATH') || exit;
                             </span>
                         </div>
 
-                        <!-- Price -->
+                        <!-- PNBP -->
                         <div class="form-group">
-                            <label for="edit-category-price">
+                            <label for="edit-category-pnbp">
                                 <?php _e('Harga', 'wp-equipment'); ?>
                             </label>
                             <input type="number" 
-                                   id="edit-category-price" 
-                                   name="price" 
+                                   id="edit-category-pnbp" 
+                                   name="pnbp" 
                                    class="regular-text" 
                                    min="0" 
                                    step="0.01">

@@ -30,48 +30,76 @@ class WP_Equipment_Deactivator {
         }
     }
 
+    private static function should_clear_data() {
+        $dev_settings = get_option('wp_equipment_development_settings');
+        if (isset($dev_settings['clear_data_on_deactivate']) && 
+            $dev_settings['clear_data_on_deactivate']) {
+            return true;
+        }
+        return defined('WP_EQUIPMENT_DEVELOPMENT') && WP_EQUIPMENT_DEVELOPMENT;
+    }
+
     public static function deactivate() {
         global $wpdb;
-
-        // Daftar tabel yang akan dihapus
-        $tables = [
-            'app_equipment_employees',
-            'app_licences',
-            'app_equipment_membership_levels',
-            'app_equipments'
-        ];
-
-        // Hapus tabel secara terurut (child tables first)
-        foreach ($tables as $table) {
-            $table_name = $wpdb->prefix . $table;
-            $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
-            self::debug("Dropping table: {$table_name}");
-        }
-
-        // Hapus semua opsi terkait membership
-        self::cleanupMembershipOptions();
-
-        // Bersihkan cache
-        wp_cache_delete('wp_equipment_equipment_list', 'wp_equipment');
-        wp_cache_delete('wp_equipment_licence_list', 'wp_equipment');
-        wp_cache_delete('wp_equipment_membership_settings', 'wp_equipment');
         
-        self::debug("Plugin deactivation complete");
-    }
+        $should_clear_data = self::should_clear_data();
 
-    // Tambahkan metode baru ini
-    private static function cleanupMembershipOptions() {
+        // Hapus development settings terlebih dahulu
+        delete_option('wp_equipment_development_settings');
+        self::debug("Development settings cleared");
+
         try {
-            // Hapus opsi membership settings
-            delete_option('wp_equipment_membership_settings');
-            self::debug("Membership settings deleted");
+            // Only proceed with data cleanup if in development mode
+            if (!$should_clear_data) {
+                self::debug("Skipping data cleanup on plugin deactivation");
+                return;
+            }
 
-            // Hapus transients jika ada
-            delete_transient('wp_equipment_membership_cache');
-            self::debug("Membership transients cleared");
+            // Start transaction
+            $wpdb->query('START TRANSACTION');
+
+            // List of tables to be dropped in correct order (child tables first)
+            $tables = [
+                'app_licencees',              
+                'app_equipments',             
+                'app_categories'              
+            ];
+
+            // Drop tables in order
+            foreach ($tables as $table) {
+                $table_name = $wpdb->prefix . $table;
+                self::debug("Attempting to drop table: {$table_name}");
+                $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
+            }
+
+            // Clear all caches in wp_equipment group
+            self::clearAllCaches();
+
+            // Commit transaction
+            $wpdb->query('COMMIT');
+            
+            self::debug("Plugin deactivation complete");
 
         } catch (\Exception $e) {
-            self::debug("Error cleaning up membership options: " . $e->getMessage());
+            $wpdb->query('ROLLBACK');
+            self::debug("Error during deactivation: " . $e->getMessage());
         }
     }
+
+    private static function clearAllCaches() {
+        try {
+            global $wp_object_cache;
+            $cache_group = 'wp_equipment';
+
+            // Hapus seluruh cache dalam grup
+            if (isset($wp_object_cache->cache[$cache_group])) {
+                unset($wp_object_cache->cache[$cache_group]);
+                self::debug("Cleared all caches in group: {$cache_group}");
+            }
+
+        } catch (\Exception $e) {
+            self::debug("Error clearing caches: " . $e->getMessage());
+        }
+    }
+
 }

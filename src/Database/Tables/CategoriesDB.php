@@ -36,7 +36,7 @@ class CategoriesDB {
             relation_id bigint(20) UNSIGNED NULL,
             sort_order int NOT NULL DEFAULT 0,
             unit varchar(50) NULL,
-            price decimal(10,2) NULL,
+            pnbp decimal(10,2) NULL,
             status enum('active','inactive') DEFAULT 'active',
             created_by bigint(20) NOT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,

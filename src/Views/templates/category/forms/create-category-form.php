@@ -25,7 +25,7 @@
  * - Added proper form validation
  * - Added modal management
  * - Added hierarchy selection
- * - Added unit and price fields
+ * - Added unit and pnbp fields
  *
  * Last modified: 2024-02-12 16:30:00
  */
@@ -150,14 +150,14 @@ defined('ABSPATH') || exit;
                             </span>
                         </div>
 
-                        <!-- Price -->
+                        <!-- PNBP -->
                         <div class="form-group">
-                            <label for="category-price">
+                            <label for="category-pnbp">
                                 <?php _e('Harga', 'wp-equipment'); ?>
                             </label>
                             <input type="number" 
-                                   id="category-price" 
-                                   name="price" 
+                                   id="category-pnbp" 
+                                   name="pnbp" 
                                    class="regular-text" 
                                    min="0" 
                                    step="0.01">

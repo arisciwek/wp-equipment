@@ -259,7 +259,7 @@
     width: 120px;
 }
 
-#categories-table .column-price {
+#categories-table .column-pnbp {
     text-align: right;
     font-family: monospace;
 }
@@ -466,7 +466,7 @@
 /* Mobile (dibawah 768px) */
 @media screen and (max-width: 768px) {
     #categories-table .column-code,
-    #categories-table .column-price {
+    #categories-table .column-pnbp {
         display: none;
     }
 }

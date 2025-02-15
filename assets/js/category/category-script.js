@@ -267,11 +267,11 @@
     
             // Product Information
             $('#category-unit').text(data.category.unit || '-');
-            $('#category-price').text(data.category.price ? 
+            $('#category-pnbp').text(data.category.pnbp ? 
                 new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR'
-                }).format(data.category.price) : '-'
+                }).format(data.category.pnbp) : '-'
             );
     
             // Timeline Information

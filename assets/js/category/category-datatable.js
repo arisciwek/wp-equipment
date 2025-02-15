@@ -58,7 +58,7 @@
                    { data: 'level' },
                    { data: 'parent_name' },
                    { data: 'unit' },
-                   { data: 'price' },
+                   { data: 'pnbp' },
                    { 
                        data: 'actions',
                        orderable: false,

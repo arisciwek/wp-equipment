@@ -25,7 +25,7 @@ class CategoryData {
             'relation_id' => null,
             'sort_order' => 1,
             'unit' => null,
-            'price' => null,
+            'pnbp' => null,
             'status' => 'active'
         ],
         [
@@ -39,7 +39,7 @@ class CategoryData {
             'relation_id' => null,
             'sort_order' => 1,
             'unit' => null,
-            'price' => null,
+            'pnbp' => null,
             'status' => 'active'
         ],
         [
@@ -53,7 +53,7 @@ class CategoryData {
             'relation_id' => null,
             'sort_order' => 1,
             'unit' => 'per dokumen',
-            'price' => 300000,
+            'pnbp' => 300000,
             'status' => 'active'
         ]
     ];

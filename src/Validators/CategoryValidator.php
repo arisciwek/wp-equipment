@@ -16,7 +16,7 @@
 *              - Required fields
 *              - Parent-child relationships
 *              - Level validation
-*              - Price format
+*              - PNBP format
 *
 * Changelog:
 * v1.0.0 - 2024-02-10
@@ -61,8 +61,8 @@ class CategoryValidator {
             }
         }
 
-        if (!empty($data['price']) && (!is_numeric($data['price']) || $data['price'] < 0)) {
-            $errors[] = __('Price must be a non-negative number', 'wp-equipment');
+        if (!empty($data['pnbp']) && (!is_numeric($data['pnbp']) || $data['pnbp'] < 0)) {
+            $errors[] = __('PNBP must be a non-negative number', 'wp-equipment');
         }
 
         return $errors;
@@ -93,8 +93,8 @@ class CategoryValidator {
             }
         }
 
-        if (!empty($data['price']) && (!is_numeric($data['price']) || $data['price'] < 0)) {
-            $errors[] = __('Price must be a non-negative number', 'wp-equipment');
+        if (!empty($data['pnbp']) && (!is_numeric($data['pnbp']) || $data['pnbp'] < 0)) {
+            $errors[] = __('PNBP must be a non-negative number', 'wp-equipment');
         }
 
         return $errors;

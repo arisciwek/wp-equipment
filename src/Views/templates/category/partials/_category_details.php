@@ -81,8 +81,8 @@ defined('ABSPATH') || exit;
                         <td><span id="category-unit"></span></td>
                     </tr>
                     <tr>
-                        <th><?php _e('Price', 'wp-equipment'); ?></th>
-                        <td><span id="category-price"></span></td>
+                        <th><?php _e('PNBP', 'wp-equipment'); ?></th>
+                        <td><span id="category-pnbp"></span></td>
                     </tr>
                 </table>
             </div>

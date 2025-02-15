@@ -13,7 +13,7 @@
  *              - Struktur hierarki kategori equipment
  *              - Support multiple level depth
  *              - Tracking parent-child relationships
- *              - Price dan unit untuk kategori tertentu
+ *              - PNBP dan unit untuk kategori tertentu
  */
 
 namespace WPEquipment\Database\Demo;
@@ -171,7 +171,7 @@ class CategoryDemoData extends AbstractDemoData {
                     'parent_id' => $category['parent_id'],
                     'sort_order' => $category['sort_order'] ?? 0,
                     'unit' => $category['unit'],
-                    'price' => $category['price'],
+                    'pnbp' => $category['pnbp'],
                     'status' => $category['status'] ?? 'active'
                 ];
 
