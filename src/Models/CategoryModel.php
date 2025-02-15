@@ -47,6 +47,17 @@ class CategoryModel {
     public function create(array $data): ?int {
         global $wpdb;
 
+        // Pre create hook - sebagai filter
+        // Plugin lain bisa modifikasi data atau batalkan operasi
+        $filtered_data = apply_filters('wp_equipment_pre_create_category', $data);
+        
+        // Cek jika operasi dibatalkan
+        if ($filtered_data === false) {
+            return null;
+        }
+        
+        // Gunakan data yang sudah difilter
+
         $result = $wpdb->insert(
             $this->table,
             [
@@ -77,8 +88,12 @@ class CategoryModel {
 
         $id = (int) $wpdb->insert_id;
         
-        // Clear relevant caches
+        // Clear cache
         $this->clearCategoryCache($id);
+        
+        // Post create hook - sebagai action
+        // Plugin lain bisa jalankan aksi tambahan
+        do_action('wp_equipment_post_create_category', $id, $filtered_data);
         
         return $id;
     }
@@ -117,8 +132,17 @@ class CategoryModel {
     public function update(int $id, array $data): bool {
         global $wpdb;
 
+        // Pre update hook - sebagai filter
+        // Plugin lain bisa modifikasi data atau batalkan operasi
+        $filtered_data = apply_filters('wp_equipment_pre_update_category', $data, $id);
+        
+        // Cek jika operasi dibatalkan
+        if ($filtered_data === false) {
+            return false;
+        }
+
         $updateData = array_merge(
-            array_intersect_key($data, [
+            array_intersect_key($filtered_data, [
                 'code' => true,
                 'name' => true,
                 'description' => true,
@@ -169,6 +193,11 @@ class CategoryModel {
 
         if ($result !== false) {
             $this->clearCategoryCache($id);
+            
+            // Post update hook - sebagai action
+            // Plugin lain bisa jalankan aksi tambahan
+            $updated_category = $this->find($id);
+            do_action('wp_equipment_post_update_category', $id, $updated_category, $filtered_data);
         }
 
         return $result !== false;
@@ -275,6 +304,19 @@ class CategoryModel {
             return false;
         }
 
+        // Pre delete hook - sebagai filter
+        // Plugin lain bisa membatalkan operasi delete
+        $should_delete = apply_filters('wp_equipment_pre_delete_category', true, $id);
+        if ($should_delete === false) {
+            return false;
+        }
+
+        // Ambil data kategori sebelum dihapus untuk post hook
+        $category = $this->find($id);
+        if (!$category) {
+            return false;
+        }
+
         $result = $wpdb->delete(
             $this->table,
             ['id' => $id],
@@ -283,11 +325,15 @@ class CategoryModel {
 
         if ($result !== false) {
             $this->clearCategoryCache($id);
+            
+            // Post delete hook - sebagai action
+            // Plugin lain bisa jalankan aksi tambahan setelah delete
+            do_action('wp_equipment_post_delete_category', $id, $category);
         }
 
         return $result !== false;
     }
-
+    
     public function hasChildren(int $id): bool {
         global $wpdb;
 
