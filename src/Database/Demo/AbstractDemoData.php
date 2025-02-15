@@ -50,6 +50,12 @@ abstract class AbstractDemoData {
     protected EquipmentCacheManager $cache;
     protected $debug_mode = false;
 
+    private static $category_ids = [];
+    protected $categories;
+    protected $categoryModel;
+    protected $categoryController;
+
+
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
@@ -68,6 +74,9 @@ abstract class AbstractDemoData {
         
         // Initialize models after plugins are loaded to prevent memory issues
         add_action('plugins_loaded', [$this, 'initModels'], 30);
+        // Inisialisasi langsung model dan controller yang dibutuhkan
+        $this->categoryModel = new \WPEquipment\Models\CategoryModel();
+        $this->categoryController = new \WPEquipment\Controllers\CategoryController();
     }
 
     public function initModels() {

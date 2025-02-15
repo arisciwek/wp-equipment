@@ -31,6 +31,14 @@ class CategoryDemoData extends AbstractDemoData {
         $this->categories = CategoryData::$data;
     }
 
+    public function initModels() {
+        parent::initModels();
+        // Inisialisasi category model langsung
+        if (!isset($this->categoryModel)) {
+            $this->categoryModel = new \WPEquipment\Models\CategoryModel();
+        }
+    }
+
     protected function validate(): bool {
         try {
             // Validate that we have category data
@@ -126,81 +134,54 @@ class CategoryDemoData extends AbstractDemoData {
         }
     }
 
+
     protected function generate(): void {
         if (!$this->isDevelopmentMode()) {
             $this->debug('Tidak dapat generate data - mode development tidak aktif');
             return;
         }
 
-        // Validasi struktur database terlebih dahulu
-        if (!$this->validateDatabaseStructure()) {
-            throw new \Exception('Struktur database tidak valid');
-        }
-
-        // Bersihkan data yang ada jika diperlukan
-        if ($this->shouldClearData()) {
-            $this->wpdb->query("DELETE FROM {$this->wpdb->prefix}app_categories WHERE id > 0");
-            $this->wpdb->query("ALTER TABLE {$this->wpdb->prefix}app_categories AUTO_INCREMENT = 1");
-            $this->debug("Data kategori yang ada telah dibersihkan");
-        }
-
         try {
-            // Urutkan kategori berdasarkan level
+            // Bersihkan data yang ada jika diperlukan
+            if ($this->shouldClearData()) {
+                $this->wpdb->query("DELETE FROM {$this->wpdb->prefix}app_categories WHERE id > 0");
+                $this->wpdb->query("ALTER TABLE {$this->wpdb->prefix}app_categories AUTO_INCREMENT = 1");
+                $this->debug("Data kategori yang ada telah dibersihkan");
+            }
+
+            // Urutkan berdasarkan level
             usort($this->categories, function($a, $b) {
                 return $a['level'] - $b['level'];
             });
 
             foreach ($this->categories as $category) {
                 // Periksa apakah kategori sudah ada
-                $existing = $this->wpdb->get_row($this->wpdb->prepare(
-                    "SELECT * FROM {$this->wpdb->prefix}app_categories WHERE code = %s",
-                    $category['code']
-                ));
-
+                $existing = $this->categoryModel->existsByCode($category['code']);
                 if ($existing) {
                     $this->debug("Kategori dengan kode {$category['code']} sudah ada, melewati...");
                     continue;
                 }
 
                 // Siapkan data kategori
-                $category_data = [
+                $categoryData = [
                     'code' => $category['code'],
                     'name' => $category['name'],
                     'description' => $category['description'],
                     'level' => $category['level'],
                     'parent_id' => $category['parent_id'],
-                    'group_id' => $category['group_id'] ?? null,
-                    'relation_id' => $category['relation_id'] ?? null,
                     'sort_order' => $category['sort_order'] ?? 0,
                     'unit' => $category['unit'],
                     'price' => $category['price'],
-                    'status' => $category['status'] ?? 'active',
-                    'created_by' => get_current_user_id(),
-                    'created_at' => current_time('mysql'),
-                    'updated_at' => current_time('mysql')
+                    'status' => $category['status'] ?? 'active'
                 ];
 
-                // Log data sebelum insert untuk debugging
-                $this->debug("Mencoba insert kategori: " . print_r($category_data, true));
-
-                // Insert kategori dengan error handling yang lebih baik
-                $result = $this->wpdb->insert(
-                    $this->wpdb->prefix . 'app_categories',
-                    $category_data,
-                    [
-                        '%s', '%s', '%s', '%d', '%d', '%d', '%d', 
-                        '%d', '%s', '%f', '%s', '%d', '%s', '%s'
-                    ]
-                );
-
-                if ($result === false) {
-                    throw new \Exception(
-                        "Gagal insert kategori {$category['name']}. " .
-                        "Error: " . $this->wpdb->last_error
-                    );
+                // Buat kategori menggunakan model
+                $inserted_id = $this->categoryModel->create($categoryData);
+                
+                if (!$inserted_id) {
+                    throw new \Exception("Gagal membuat kategori: {$category['name']}");
                 }
 
-                $inserted_id = $this->wpdb->insert_id;
                 self::$category_ids[] = $inserted_id;
                 $this->debug("Berhasil membuat kategori: {$category['name']} dengan ID: {$inserted_id}");
             }
@@ -210,6 +191,8 @@ class CategoryDemoData extends AbstractDemoData {
             throw $e;
         }
     }
+    
+    
     /**
      * Get array of generated category IDs
      */

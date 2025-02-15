@@ -8,23 +8,138 @@
  *
  * Path: /wp-equipment/assets/css/category/datatable-category.css
  */
+/**
+ * Optimized Category Management Styles
+ * Menggabungkan datatable-category.css dan category-style.css
+ * 
+ * @package     WP_Equipment
+ * @subpackage  Assets/CSS
+ * @version     2.0.0
+ * @author      arisciwek
+ */
 
-/* DataTable Container & Wrapper */
+/* ========= 1. LAYOUT & CONTAINERS ========= */
+
+/* Main Container */
+.wp-category-container {
+    display: flex;
+    gap: 20px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 600px;
+    padding: 15px;
+    background: #f0f0f1;
+    border-radius: 8px;
+}
+
+/* Dashboard Stats */
+.wi-stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 15px 0;
+}
+
+.wi-stat-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.wi-stat-box h3 {
+    margin: 0 0 10px 0;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.wi-stat-number {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2271b1;
+    margin: 0;
+}
+
+/* Panel Layout */
+.wp-category-left-panel,
+.wp-category-right-panel {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.wp-category-left-panel {
+    width: 100%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wp-category-right-panel {
+    width: 55%;
+    display: none;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Panel Headers */
+.wp-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 15px 20px;
+    min-height: 50px;
+}
+
+.wp-category-header h2 {
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Panel Content Areas */
+.wp-category-content {
+    padding: 20px;
+    background: #fff;
+}
+
+.wp-category-right-panel .wp-category-content {
+    background: #fbfbfc;
+}
+
+/* Panel Footer */
+.wp-category-footer {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+/* ========= 2. DATATABLE STYLES ========= */
+
+/* DataTable Wrapper */
 .dataTables_wrapper {
     position: relative;
     clear: both;
-    margin: 0; /* Hapus margin 20px 0 */
     width: 100%;
     background: #fff;
-    padding: 0; /* Hapus padding 20px */
 }
 
-/* Wrapper untuk search & length */
+/* DataTable Controls */
 .dataTables_wrapper .top-controls {
-    margin: 10px;  /* Berikan margin yang lebih kecil */
+    margin: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-/* Length & Filter Controls */
+/* Length Control */
 .dataTables_length {
     display: flex;
     align-items: center;
@@ -43,6 +158,7 @@
     font-size: 13px;
 }
 
+/* Search Control */
 .dataTables_filter {
     display: flex;
     align-items: center;
@@ -64,17 +180,12 @@
     outline: none;
 }
 
-/**
- *  Table Styling
- *
- */
-
 /* Table Structure */
 #categories-table {
     width: 100% !important;
     border-collapse: separate;
     border-spacing: 0;
-    margin: 15px 0;
+    margin: 0;
 }
 
 /* Table Header */
@@ -88,6 +199,7 @@
     position: relative;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    white-space: nowrap;
 }
 
 #categories-table thead th:hover {
@@ -140,131 +252,19 @@
     vertical-align: middle;
 }
 
-/* Action Buttons Column */
+/* Special Columns */
 #categories-table .column-actions {
     text-align: right;
     white-space: nowrap;
     width: 120px;
 }
 
-/* Price Column */
 #categories-table .column-price {
     text-align: right;
     font-family: monospace;
 }
 
-/**
- * Responsive & Interactive
- *
- */
-
-/* Pagination */
-.dataTables_paginate {
-    margin-top: 15px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 5px;
-}
-
-.dataTables_paginate .paginate_button {
-    padding: 6px 12px;
-    margin: 0 2px;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    cursor: pointer;
-    color: #2271b1;
-    background: #fff;
-    transition: all 0.2s ease;
-}
-
-.dataTables_paginate .paginate_button:hover {
-    background: #f0f0f1;
-    border-color: #c3c4c7;
-    color: #135e96;
-}
-
-.dataTables_paginate .paginate_button.current {
-    background: #2271b1;
-    border-color: #2271b1;
-    color: #fff;
-    font-weight: 500;
-}
-
-.dataTables_paginate .paginate_button.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Info Display */
-.dataTables_info {
-    margin-top: 15px;
-    color: #646970;
-    font-size: 13px;
-}
-
-/* Loading State */
-.dataTables_processing {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px 15px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 1;
-}
-
-/* Responsive Adjustments */
-@media screen and (max-width: 782px) {
-    .dataTables_wrapper .top-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .dataTables_filter input[type="search"] {
-        width: 100%;
-        min-width: auto;
-    }
-
-    .dataTables_length {
-        justify-content: flex-start;
-    }
-
-    #categories-table td:before {
-        content: attr(data-title);
-        font-weight: 600;
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .dataTables_paginate {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-}
-
-/* Empty Table State */
-.dataTables_empty {
-    text-align: center;
-    padding: 40px 20px !important;
-    color: #646970;
-    font-style: italic;
-    background: #f8f9fa !important;
-}
-
-/* Row Selection & Highlight */
-#categories-table tbody tr.selected {
-    background-color: #e8f0fe !important;
-}
-
-#categories-table tbody tr.highlight {
-    background-color: #fef8e3 !important;
-    transition: background-color 0.3s ease;
-}
-
-
+/* Action Buttons */
 .button.view-category,
 .button.edit-category,
 .button.delete-category {
@@ -291,23 +291,182 @@
 .button.delete-category:hover {
     background: #fff5f5;
     border-color: #d63638;
-    color: #d63638;
 }
 
-@media screen and (max-width: 782px) {
-    .wp-category-content {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+/* Table States */
+#categories-table tbody tr.selected {
+    background-color: #e8f0fe !important;
+}
+
+#categories-table tbody tr.highlight {
+    background-color: #fef8e3 !important;
+    transition: background-color 0.3s ease;
+}
+
+.dataTables_empty {
+    text-align: center;
+    padding: 40px 20px !important;
+    color: #646970;
+    font-style: italic;
+    background: #f8f9fa !important;
+}
+
+/* ========= 3. TAB NAVIGATION ========= */
+
+.nav-tab-wrapper {
+    border-bottom: 1px solid #c3c4c7;
+    padding-top: 1px;
+    margin: 0;
+}
+
+.nav-tab {
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #646970;
+    padding: 12px 20px;
+    margin: 0 10px 0 0;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+    color: #2271b1;
+}
+
+.nav-tab-active {
+    border-bottom: 2px solid #2271b1;
+    color: #2271b1;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+    padding: 5px;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ========= 4. ANIMATIONS ========= */
+
+@keyframes slideIn {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
     }
 }
 
-/* Table Structure */
-#categories-table {
-    width: 100% !important; /* Force full width */
-    margin: 0; /* Hapus margin 15px 0 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* Pagination area */
-.dataTables_paginate {
-    margin: 10px; /* Sesuaikan margin pagination */
+/* ========= 5. RESPONSIVE DESIGN ========= */
+
+/* Large Screens (1200px and below) */
+@media screen and (max-width: 1200px) {
+    .wp-category-container.with-right-panel .wp-category-left-panel {
+        width: 40%;
+    }
+    
+    .wp-category-right-panel {
+        width: 60%;
+    }
+}
+
+/* Tablet and Below (782px) */
+@media screen and (max-width: 782px) {
+    /* Container Layout */
+    .wp-category-container {
+        flex-direction: column;
+    }
+
+    .wp-category-container.with-right-panel .wp-category-left-panel,
+    .wp-category-right-panel {
+        width: 100%;
+    }
+
+    /* Stats Layout */
+    .wi-stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    /* DataTable Adjustments */
+    .wp-category-content {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+    }
+
+    .dataTables_wrapper .top-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dataTables_filter input[type="search"] {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .dataTables_length {
+        justify-content: flex-start;
+    }
+
+    /* Table Modifications */
+    #categories-table {
+        min-width: 650px; /* Prevents table from becoming too narrow */
+    }
+
+    #categories-table td {
+        padding: 8px 10px;
+    }
+
+    /* Pagination Adjustments */
+    .dataTables_paginate {
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 10px;
+    }
+}
+
+/* Small Mobile (480px) */
+@media screen and (max-width: 480px) {
+    .wp-category-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dataTables_length select {
+        width: 100%;
+    }
+}
+
+/* Tablet (dibawah 1024px) */
+@media screen and (max-width: 1024px) {
+    #categories-table .column-level,
+    #categories-table .column-parent,
+    #categories-table .column-unit {
+        display: none;
+    }
+}
+
+/* Mobile (dibawah 768px) */
+@media screen and (max-width: 768px) {
+    #categories-table .column-code,
+    #categories-table .column-price {
+        display: none;
+    }
 }

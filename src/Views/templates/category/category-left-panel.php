@@ -13,7 +13,7 @@
 defined('ABSPATH') || exit;
 ?>
 
-<div id="wp-category-left-panel" class="wp-equipment-left-panel">
+<div id="wp-category-left-panel" class="wp-category-left-panel">
    <div class="wp-category-header">
        <h2><?php _e('Category List', 'wp-equipment'); ?></h2>
        <div class="header-actions">
