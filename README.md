@@ -191,6 +191,66 @@ wp-equipment/
 - Debug mode support
 - Graceful fallbacks
 
+## Hook System
+- Pre Create Category Hooks
+  - Filter: `wp_equipment_pre_create_category`
+    - Parameters:
+      - `$data` (array): Data kategori mentah
+        - code
+        - name
+        - description
+        - level
+        - parent_id
+        - sort_order
+        - unit
+        - pnbp
+    - Return: Modified data array atau false untuk membatalkan operasi
+    
+  - Action: `wp_equipment_post_create_category` 
+    - Parameters:
+      - `$id` (int): ID kategori yang baru dibuat
+      - `$category` (object): Data kategori lengkap termasuk relasi
+
+- Error Handling untuk Plugin
+  - Pre hooks dapat membatalkan operasi dengan return false
+  - Gunakan try-catch untuk menangkap exception
+  - Log error ke sistem logging WordPress
+  - Kembalikan pesan error yang informatif
+  - Contoh penanganan:
+    ```php
+    try {
+        // Kode plugin
+        throw new \Exception('Custom error');
+    } catch (\Exception $e) {
+        error_log('Plugin X - Category Error: ' . $e->getMessage());
+        return false;
+    }
+    ```
+- Pre Update Category Hooks
+  - Filter: `wp_equipment_pre_update_category`
+    - Parameters:
+      - `$data` (array): Data kategori yang akan diupdate
+      - `$id` (int): ID kategori yang akan diupdate
+    - Return: Modified data array atau false untuk membatalkan operasi
+    
+  - Action: `wp_equipment_post_update_category`
+    - Parameters:
+      - `$id` (int): ID kategori yang diupdate
+      - `$category` (object): Data kategori setelah diupdate
+      - `$data` (array): Data mentah yang digunakan untuk update
+
+- Pre Delete Category Hooks
+  - Filter: `wp_equipment_pre_delete_category`
+    - Parameters:
+      - `$should_delete` (bool): Default true
+      - `$id` (int): ID kategori yang akan dihapus
+    - Return: Boolean - false untuk membatalkan operasi delete
+    
+  - Action: `wp_equipment_post_delete_category`
+    - Parameters:
+      - `$id` (int): ID kategori yang dihapus
+      - `$category` (object): Data kategori sebelum dihapus
+
 ## 📝 Changelog
 
 ### Version 1.0.0
