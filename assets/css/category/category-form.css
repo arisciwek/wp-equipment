@@ -1,6 +1,11 @@
-/* Category Form Styles - WordPress Admin Integration */
+/**
+ * Category Form Styles - Clean Version
+ * @package     WP_Equipment
+ * @subpackage  Assets/CSS/Category
+ * @version     1.1.0
+ */
 
-/* Form Section Styling */
+/* Form Section */
 .category-form-section {
     background: #fff;
     border: 1px solid #c3c4c7;
@@ -22,21 +27,6 @@
 }
 
 /* Form Layout */
-.form-row .info-level,
-.form-row .info-produk{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 15px;
-    margin: 0;
-}
-
-.form-group {
-    flex: 1 1 300px;
-    min-width: 250px;
-    margin-bottom: 15px;
-}
-/* Form row styling */
 .form-row {
     display: flex;
     gap: 20px;
@@ -44,10 +34,22 @@
     margin: 0;
 }
 
-/* Field width adjustments */
+.form-row .info-level,
+.form-row .info-produk {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group {
+    flex: 1 1 300px;
+    min-width: 250px;
+}
+
+/* Specific Field Widths */
 .form-group.info-dasar[data-field="code"] {
     flex: 0 0 12%;
-    min-width: 20px;
+    min-width: 120px;
 }
 
 .form-group.info-dasar[data-field="name"] {
@@ -55,33 +57,7 @@
     min-width: 200px;
 }
 
-/* Remove margin since we're using gap */
-.form-group.info-dasar {
-    margin: 0;
-}
-
-/* Responsive design */
-@media screen and (max-width: 782px) {
-    .form-row {
-        flex-direction: column;
-    }
-    
-    .form-group.info-dasar[data-field="code"],
-    .form-group.info-dasar[data-field="name"] {
-        width: 100%;
-        flex: 0 0 100%;
-    }
-}
-
-/* Form Elements */
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    font-size: 13px;
-    color: #1d2327;
-}
-
+/* Form Elements - Only Custom Styling */
 .form-group label .required {
     color: #d63638;
     margin-left: 4px;
@@ -93,55 +69,24 @@
 .form-group textarea {
     width: 100%;
     max-width: 100%;
-    padding: 6px 8px;
-    border-radius: 4px;
-    border: 1px solid #8c8f94;
-    font-size: 14px;
-    line-height: 2;
-    min-height: 30px;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="number"]:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
-    outline: 2px solid transparent;
-}
-
-/* Help Text */
 .form-text {
-    display: block;
     margin-top: 4px;
     font-size: 12px;
     color: #646970;
     font-style: italic;
 }
 
-/* Textarea Specific */
-.form-group textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-/* Select Dropdowns */
+/* Custom Select Styling */
 .form-group select {
     padding-right: 24px;
     background: #fff url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E') no-repeat right 5px top 55%;
     background-size: 16px 16px;
-    cursor: pointer;
+    appearance: none;
 }
 
-/* Disabled States */
-.form-group select:disabled {
-    background-color: #f0f0f1;
-    border-color: #dcdcde;
-    color: #8c8f94;
-    cursor: not-allowed;
-}
-
-/* Status Section */
+/* Status Information */
 .status-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -152,80 +97,24 @@
     border-radius: 4px;
 }
 
-.info-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.info-group label {
-    font-weight: 600;
-    color: #1d2327;
-    font-size: 13px;
-}
-
-.info-group span {
-    color: #50575e;
-    font-size: 13px;
-}
-
 /* Warning Messages */
 .level-warning,
 .parent-warning {
     color: #d63638;
     font-size: 12px;
     margin-top: 4px;
-    display: block;
 }
 
-/* Form Footer */
-.modal-footer {
-    background: #f6f7f7;
-    border-top: 1px solid #dcdcde;
-    padding: 15px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
+/* Form Submit Area */
 .form-submit {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-/* Spinner Alignment */
 .form-submit .spinner {
     float: none;
     margin: 0;
-    visibility: hidden;
-}
-
-.form-submit .spinner.is-active {
-    visibility: visible;
-}
-
-/* Small Screen Adjustments */
-@media screen and (max-width: 782px) {
-    .form-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .form-group {
-        flex: 1 1 100%;
-    }
-    
-    .status-info {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-group input[type="text"],
-    .form-group input[type="number"],
-    .form-group select {
-        min-height: 40px;
-    }
 }
 
 /* Error States */
@@ -237,4 +126,22 @@
 
 .form-group.has-error .form-text {
     color: #d63638;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 782px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-group,
+    .form-group.info-dasar[data-field="code"],
+    .form-group.info-dasar[data-field="name"] {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+    
+    .status-info {
+        grid-template-columns: 1fr;
+    }
 }

@@ -48,6 +48,8 @@ defined('ABSPATH') || exit;
 
     <!-- Modal Forms -->
     <?php
+    require_once WP_EQUIPMENT_PATH . 'src/Views/components/confirmation-modal.php';
+
     require_once WP_EQUIPMENT_PATH . 'src/Views/templates/category/forms/create-category-form.php';
     require_once WP_EQUIPMENT_PATH . 'src/Views/templates/category/forms/edit-category-form.php';
     ?>

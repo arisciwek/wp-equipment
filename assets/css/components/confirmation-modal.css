@@ -31,44 +31,21 @@
  * [header documentation yang sudah ada...]
  */
 
-/* Modal Header */
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    border-bottom: 1px solid #ddd;
-}
-
-.modal-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-/* Modal Types */
+ 
+/* Modal Type Variations */
 .modal-type-danger .modal-icon { color: #dc3232; }
 .modal-type-warning .modal-icon { color: #ffb900; }
 .modal-type-info .modal-icon { color: #00a0d2; }
 .modal-type-success .modal-icon { color: #46b450; }
 
-/* Modal Body */
+/* Modal Body - Specific to confirmation modal */
 .modal-body {
     padding: 1rem;
     font-size: 14px;
     line-height: 1.5;
 }
 
-/* Modal Footer */
-.modal-footer {
-    padding: 1rem;
-    border-top: 1px solid #ddd;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-}
-
-/* Danger Button Style */
+/* Danger Button Style - Specific to confirmation actions */
 .button-danger {
     background: #dc3232 !important;
     border-color: #ba2020 !important;
@@ -89,7 +66,7 @@
     border-color: #8a1818 !important;
 }
 
-/* Disabled state */
+/* Disabled state for danger button */
 .button-danger:disabled,
 .button-danger.disabled {
     background: #e57373 !important;
@@ -98,59 +75,18 @@
     cursor: not-allowed;
 }
 
-/* Close Button Style */
-.modal-close {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: #999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-    background: #f0f0f0;
-    color: #666;
-}
-
-.modal-close:focus {
-    outline: none;
-    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #2271b1;
-    color: #666;
-}
-
-/* Close icon */
+/* Close icon specific styling */
 .modal-close span {
     font-size: 20px;
     line-height: 1;
     display: block;
 }
 
-/* Animation Keyframes */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-
-/* Responsive adjustments jika diperlukan */
+/* Responsive adjustments specific to confirmation modal */
 @media screen and (max-width: 782px) {
-    .modal-overlay {
-        padding: 1rem;
-    }
-
     .modal {
         width: 100%;
-        max-height: calc(100vh - 2rem); /* Pastikan tidak lebih tinggi dari viewport */
-        overflow-y: auto; /* Scroll jika konten terlalu panjang */
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
     }
 }

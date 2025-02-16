@@ -102,6 +102,7 @@ class WP_Equipment_Dependencies {
             [], 
             $this->version
         );
+        wp_enqueue_style('wp-equipment-modal', WP_EQUIPMENT_URL . 'assets/css/components/confirmation-modal.css', [], $this->version);
         
         wp_enqueue_style('wp-equipment-category-form', 
             WP_EQUIPMENT_URL . 'assets/css/category/category-form.css', 
@@ -208,8 +209,9 @@ class WP_Equipment_Dependencies {
 
             // Components
             wp_enqueue_script('equipment-toast', WP_EQUIPMENT_URL . 'assets/js/components/equipment-toast.js', ['jquery'], $this->version, true);
-            
-            // Category scripts
+
+            wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
+
             wp_enqueue_script('category-form', 
                 WP_EQUIPMENT_URL . 'assets/js/category/category-form.js', 
                 ['jquery', 'jquery-validate', 'equipment-toast'], 
@@ -217,7 +219,6 @@ class WP_Equipment_Dependencies {
                 true
             );
 
-            wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
             wp_enqueue_script('category-datatable', 
                 WP_EQUIPMENT_URL . 'assets/js/category/category-datatable.js', 
                 ['jquery', 'datatables', 'equipment-toast', 'category-form', 'confirmation-modal'],

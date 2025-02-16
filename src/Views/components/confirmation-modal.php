@@ -40,41 +40,42 @@ defined('ABSPATH') || exit;
 if (!function_exists('wp_equipment_render_confirmation_modal')) {
     function wp_equipment_render_confirmation_modal() {
         ?>
-        <div id="confirmation-modal" class="modal-overlay hidden" aria-modal="true" role="dialog" style="display: none;">
-            <div class="modal" role="document">
-                <!-- Header -->
-                <div class="modal-header">
-                    <div class="modal-title">
-                        <span class="modal-icon"></span>
-                        <h3 id="modal-title"></h3>
+        <div id="confirmation-modal" class="modal-overlay" aria-modal="true" role="dialog">
+                    <div class="modal" role="document">
+                        <!-- Header -->
+                        <div class="modal-header">
+                            <div class="modal-title">
+                                <span class="modal-icon"></span>
+                                <h3 id="modal-title"></h3>
+                            </div>
+                            <button type="button"
+                                    class="modal-close"
+                                    aria-label="Close modal"
+                                    data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+    
+                        <!-- Body -->
+                        <div class="modal-body">
+                            <p id="modal-message"></p>
+                        </div>
+    
+                        <!-- Footer -->
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="button confirm-btn"
+                                    id="modal-confirm-btn">
+                            </button>
+                            <button type="button"
+                                    class="button cancel-btn"
+                                    id="modal-cancel-btn"
+                                    data-dismiss="modal">
+                            </button>
+                        </div>
                     </div>
-                    <button type="button"
-                            class="modal-close"
-                            aria-label="Close modal"
-                            data-dismiss="modal">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
                 </div>
-
-                <!-- Body -->
-                <div class="modal-body">
-                    <p id="modal-message"></p>
-                </div>
-
-                <!-- Footer -->
-                <div class="modal-footer">
-                    <button type="button"
-                            class="button confirm-btn"
-                            id="modal-confirm-btn">
-                    </button>
-                    <button type="button"
-                            class="button cancel-btn"
-                            id="modal-cancel-btn"
-                            data-dismiss="modal">
-                    </button>
-                </div>
-            </div>
-        </div>
-        <?php
+            <?php
+        }
     }
-}
+    

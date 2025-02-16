@@ -188,7 +188,7 @@
 /* */
 /* Modal Styling */
 .modal-overlay {
-    display: none;  /* Pastikan ini adalah default state */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
