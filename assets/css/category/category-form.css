@@ -3,12 +3,9 @@
  * @package     WP_Equipment
  * @subpackage  Assets/CSS/Category
  * @version     1.1.0
- */
-/**
- * Optimized Category Form Styles
+ * 
  * Path: /wp-equipment/assets/css/category/category-form.css
  */
-/* Category Form Styles - WordPress Admin Integration */
 
 /* Form Section Styling */
 .category-form-section {
@@ -32,12 +29,11 @@
 }
 
 /* Form Layout */
+.form-row .info-parent,
 .form-row .info-level,
 .form-row .info-produk{
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    padding: 15px;
     margin: 0;
 }
 
@@ -81,6 +77,11 @@
         width: 100%;
         flex: 0 0 100%;
     }
+}
+
+.form-group.info-urutan,
+.form-group.info-produk {
+    margin: 10px 16px;
 }
 
 /* Form Elements */

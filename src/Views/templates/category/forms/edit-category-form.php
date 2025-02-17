@@ -131,7 +131,7 @@ defined('ABSPATH') || exit;
                         </div>
 
                         <!-- Parent Category -->
-                        <div class="form-group">
+                        <div class="form-group info-parent">
                             <label for="edit-category-parent">
                                 <?php _e('Kategori Induk', 'wp-equipment'); ?>
                             </label>
@@ -184,7 +184,7 @@ defined('ABSPATH') || exit;
                     </div>
 
                     <!-- Sort Order -->
-                    <div class="form-group">
+                    <div class="form-group info-urutan">
                         <label for="edit-category-sort-order">
                             <?php _e('Urutan', 'wp-equipment'); ?>
                         </label>

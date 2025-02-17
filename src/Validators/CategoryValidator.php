@@ -36,6 +36,61 @@ class CategoryValidator {
 
     public function __construct() {
         $this->model = new CategoryModel();
+        // Seharusnya ada di CategoryController.php tapi tidak terlihat
+        add_action('wp_ajax_validate_category_access', [$this, 'validateAccess']);
+    }
+
+    public function validateAccess() {
+        try {
+            // Debug: log request yang masuk
+            error_log('Validating category access. Request data: ' . print_r($_POST, true));
+
+            // Cek nonce dengan debug
+            $nonce_valid = check_ajax_referer('wp_equipment_nonce', 'nonce', false);
+            error_log('Nonce validation result: ' . ($nonce_valid ? 'valid' : 'invalid'));
+            
+            if (!$nonce_valid) {
+                throw new \Exception('Invalid security token');
+            }
+
+            // Cek permission dengan debug
+            $has_permission = current_user_can('manage_options');
+            error_log('Permission check result: ' . ($has_permission ? 'has permission' : 'no permission'));
+            
+            if (!$has_permission) {
+                throw new \Exception('Insufficient permissions');
+            }
+
+            // Validasi ID
+            $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+            error_log('Validating category ID: ' . $id);
+            
+            if (!$id) {
+                throw new \Exception('Invalid category ID');
+            }
+
+            // Cek keberadaan kategori
+            $category = $this->model->find($id);
+            error_log('Category exists: ' . ($category ? 'yes' : 'no'));
+            
+            if (!$category) {
+                throw new \Exception('Category not found');
+            }
+
+            // Jika semua validasi berhasil
+            wp_send_json_success([
+                'message' => 'Access validated successfully',
+                'category_id' => $id
+            ]);
+
+        } catch (\Exception $e) {
+            error_log('Category access validation error: ' . $e->getMessage());
+            
+            wp_send_json_error([
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+        }
     }
 
     public function validateCreate(array $data): array {

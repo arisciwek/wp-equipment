@@ -262,7 +262,7 @@ class CategoryController {
 	            ];
 
 	            // Debug log response
-	            error_log('DataTable Response: ' . print_r($response, true));
+	            // error_log('DataTable Response: ' . print_r($response, true));
 
 	            wp_send_json($response);
 	            return;
