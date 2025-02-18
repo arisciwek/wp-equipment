@@ -55,14 +55,6 @@ class WPEquipment {
         require_once WP_EQUIPMENT_PATH . 'includes/class-deactivator.php';
         require_once WP_EQUIPMENT_PATH . 'includes/class-dependencies.php';
 
-        // Initialize wp-mpdf if available
-        if (file_exists(WP_EQUIPMENT_PATH . '../wp-mpdf/wp-mpdf.php')) {
-            require_once WP_EQUIPMENT_PATH . '../wp-mpdf/wp-mpdf.php';
-            if (function_exists('wp_mpdf_init')) {
-                wp_mpdf_init();
-            }
-        }
-
         $this->loader = new WP_Equipment_Loader();
 
         // Initialize Settings Controller
