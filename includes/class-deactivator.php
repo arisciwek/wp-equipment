@@ -59,10 +59,13 @@ class WP_Equipment_Deactivator {
             $wpdb->query('START TRANSACTION');
 
             // List of tables to be dropped in correct order (child tables first)
-            $tables = [
-                'app_licencees',              
-                'app_equipments',             
-                'app_categories'              
+           $tables = [
+                'app_licencees',              // Tabel independen 
+                'app_equipments',             // Tabel independen
+                'app_categories',             // Tabel yang berelasi ke groups
+                'app_groups',                 // Tabel yang berelasi ke bidang jasa
+                'app_sectors'                 // Tabel master/parent
+
             ];
 
             // Drop tables in order

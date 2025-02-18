@@ -30,11 +30,16 @@ class SettingsController {
         add_action('admin_init', [$this, 'register_development_settings']);
         
         // Register AJAX handlers with correct action names
-        // Handled in CategoryController.php
-        add_action('wp_ajax_generate_demo_categories', [$this, 'handle_generate_demo_categories']);
 
         // Handled in SettingsController.php
+        add_action('wp_ajax_generate_demo_data', [$this, 'handle_generate_demo_data']);
+
         add_action('wp_ajax_check_demo_data', [$this, 'handle_check_demo_data']);
+    }
+
+    public function __construct() {
+        // Inisialisasi hooks saat controller dibuat
+        $this->init();
     }
 
     /**
@@ -42,6 +47,8 @@ class SettingsController {
      */
     private function getGeneratorClass($type) {
         switch ($type) {
+            case 'sector':  // Tambahkan case untuk sector
+                return new \WPEquipment\Database\Demo\SectorDemoData();
             case 'category':
                 return new \WPEquipment\Database\Demo\CategoryDemoData();
             // Add other types as needed
@@ -50,9 +57,6 @@ class SettingsController {
         }
     }
 
-    /**
-     * Handle demo data generation
-     */
     public function handle_generate_demo_data() {
         try {
             // Validate permissions first
@@ -77,15 +81,17 @@ class SettingsController {
                 return;
             }
 
-            // Get the generator class
+            // Get the generator class based on type
             $generator = $this->getGeneratorClass($type);
             
             // Run the generator
             if ($generator->run()) {
-                // Clear relevant caches
-                $cache = new \WPEquipment\Cache\EquipmentCacheManager();
-                $cache->invalidateDataTableCache('category_list');
-                $cache->delete('category_tree');
+                // Clear relevant caches if needed
+                if ($type === 'category') {
+                    $cache = new \WPEquipment\Cache\EquipmentCacheManager();
+                    $cache->invalidateDataTableCache('category_list');
+                    $cache->delete('category_tree');
+                }
 
                 wp_send_json_success([
                     'message' => ucfirst($type) . ' data generated successfully.',

@@ -55,6 +55,11 @@ abstract class AbstractDemoData {
     protected $categoryModel;
     protected $categoryController;
 
+    private static $sector_ids = [];
+    protected $sectors;
+    protected $sectorModel;
+    protected $sectorController;
+
 
     public function __construct() {
         global $wpdb;
@@ -75,8 +80,15 @@ abstract class AbstractDemoData {
         // Initialize models after plugins are loaded to prevent memory issues
         add_action('plugins_loaded', [$this, 'initModels'], 30);
         // Inisialisasi langsung model dan controller yang dibutuhkan
+        
+        // AbstractDemoData.php 
+        $this->sectorModel = new \WPEquipment\Models\SectorModel();
+        $this->sectorController = new \WPEquipment\Controllers\SectorController();
+
         $this->categoryModel = new \WPEquipment\Models\CategoryModel();
         $this->categoryController = new \WPEquipment\Controllers\CategoryController();
+
+
     }
 
     public function initModels() {

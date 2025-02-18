@@ -59,17 +59,21 @@ jQuery(document).ready(function($) {
         const type = button.data('type');
         const nonce = button.data('nonce');
         
+        // Check if button should be disabled
+        if (button.prop('disabled')) {
+            return;
+        }
+        
         // Show loading state
         button.prop('disabled', true).html('Generating...');
         
-        // Important: Changed action to 'generate_demo_categories' for category type
-        const action = type === 'category' ? 'generate_demo_categories' : 'generate_demo_data';
-        
+        // Use consistent action name and pass type as parameter
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: action,
+                action: 'generate_demo_data',
+                type: type,
                 nonce: nonce
             },
             success: function(response) {
@@ -102,8 +106,9 @@ jQuery(document).ready(function($) {
                 );
             },
             complete: function() {
-                // Restore button state
-                button.prop('disabled', false).html('Generate Categories');
+                // Restore button state and label based on type
+                const label = type.charAt(0).toUpperCase() + type.slice(1);
+                button.prop('disabled', false).html('Generate ' + label);
                 // Recheck dependencies
                 checkDependencies();
             }

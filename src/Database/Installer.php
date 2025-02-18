@@ -39,6 +39,8 @@ defined('ABSPATH') || exit;
 
 class Installer {
     private static $tables = [
+        'app_sectors',
+        'app_groups',
         'app_categories',
         'app_equipments',
         'app_licencees'
@@ -74,7 +76,13 @@ class Installer {
             $wpdb->query('START TRANSACTION');
             self::debug("Starting database installation...");
 
-            // Create base tables first
+            // Create tables in order of dependencies
+            self::debug("Creating sectors table...");
+            dbDelta(Tables\SectorsDB::get_schema());
+
+            self::debug("Creating groups table...");
+            dbDelta(Tables\GroupsDB::get_schema());
+
             self::debug("Creating categories table...");
             dbDelta(Tables\CategoriesDB::get_schema());
 

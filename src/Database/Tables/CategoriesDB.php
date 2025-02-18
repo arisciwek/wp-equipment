@@ -46,7 +46,12 @@ class CategoriesDB {
             KEY parent_id_index (parent_id),
             KEY group_id_index (group_id),
             KEY level_index (level),
-            KEY status_index (status)
+            KEY status_index (status),
+            CONSTRAINT fk_category_group
+                FOREIGN KEY (group_id)
+                REFERENCES {$wpdb->prefix}app_groups(id)
+                ON DELETE RESTRICT
+                ON UPDATE CASCADE
         ) $charset_collate;";
     }
 }
