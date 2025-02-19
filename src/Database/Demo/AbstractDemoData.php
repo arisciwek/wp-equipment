@@ -55,10 +55,10 @@ abstract class AbstractDemoData {
     protected $categoryModel;
     protected $categoryController;
 
-    private static $sector_ids = [];
-    protected $sectors;
-    protected $sectorModel;
-    protected $sectorController;
+    private static $service_ids = [];
+    protected $services;
+    protected $serviceModel;
+    protected $serviceController;
 
 
     public function __construct() {
@@ -82,8 +82,8 @@ abstract class AbstractDemoData {
         // Inisialisasi langsung model dan controller yang dibutuhkan
         
         // AbstractDemoData.php 
-        $this->sectorModel = new \WPEquipment\Models\SectorModel();
-        $this->sectorController = new \WPEquipment\Controllers\SectorController();
+        $this->serviceModel = new \WPEquipment\Models\ServiceModel();
+        $this->serviceController = new \WPEquipment\Controllers\ServiceController();
 
         $this->categoryModel = new \WPEquipment\Models\CategoryModel();
         $this->categoryController = new \WPEquipment\Controllers\CategoryController();

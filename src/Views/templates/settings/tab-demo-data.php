@@ -30,15 +30,15 @@ if (!current_user_can('manage_options')) {
         </p>
 
         <div class="demo-data-grid">
-            <!-- Sectors -->
+            <!-- Services -->
             <div class="demo-data-card">
-                <h4><?php _e('Sectors', 'wp-equipment'); ?></h4>
-                <p><?php _e('Generate sample sector data as master data for groups.', 'wp-equipment'); ?></p>
+                <h4><?php _e('Services', 'wp-equipment'); ?></h4>
+                <p><?php _e('Generate sample service data as master data for groups.', 'wp-equipment'); ?></p>
                 <button type="button" 
                         class="generate-demo-data" 
-                        data-type="sector"
-                        data-nonce="<?php echo wp_create_nonce('generate_demo_sector'); ?>">
-                    <?php _e('Generate Sectors', 'wp-equipment'); ?>
+                        data-type="service"
+                        data-nonce="<?php echo wp_create_nonce('generate_demo_service'); ?>">
+                    <?php _e('Generate Services', 'wp-equipment'); ?>
                 </button>
             </div>
             

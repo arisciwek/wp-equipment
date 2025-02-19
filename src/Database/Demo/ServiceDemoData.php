@@ -7,16 +7,16 @@
  * @version     1.0.0
  * @author      arisciwek
  *
- * Path: /wp-equipment/src/Database/Demo/SectorDemoData.php
+ * Path: /wp-equipment/src/Database/Demo/ServiceDemoData.php
  */
 
 namespace WPEquipment\Database\Demo;
 
 defined('ABSPATH') || exit;
 
-class SectorDemoData extends AbstractDemoData {
-    private static $sector_ids = [];
-    protected $sectors =  [
+class ServiceDemoData extends AbstractDemoData {
+    private static $service_ids = [];
+    protected $services =  [
         [
             'id' => 1, 
             'nama' => 'Manufaktur',
@@ -71,7 +71,7 @@ class SectorDemoData extends AbstractDemoData {
 
     public function __construct() {
         parent::__construct();
-        $this->debug('SectorDemoData dibuat dengan ' . count($this->sectors) . ' sektor');
+        $this->debug('ServiceDemoData dibuat dengan ' . count($this->services) . ' sektor');
     }
 
     /**
@@ -82,13 +82,13 @@ class SectorDemoData extends AbstractDemoData {
             $this->debug('Mulai validasi data sektor...');
 
             // 1. Cek ketersediaan data
-            if (empty($this->sectors)) {
+            if (empty($this->services)) {
                 $this->debug('Error: Data sektor kosong');
                 return false;
             }
 
             // 2. Cek tabel
-            $table = $this->wpdb->prefix . 'app_sectors';
+            $table = $this->wpdb->prefix . 'app_services';
             $table_exists = $this->wpdb->get_var(
                 $this->wpdb->prepare("SHOW TABLES LIKE %s", $table)
             );
@@ -99,13 +99,13 @@ class SectorDemoData extends AbstractDemoData {
             }
 
             // 3. Cek nama unik
-            $names = array_column($this->sectors, 'nama');
+            $names = array_column($this->services, 'nama');
             if (count($names) !== count(array_unique($names))) {
                 $this->debug('Error: Ditemukan nama sektor duplikat');
                 return false;
             }
 
-            // 4. Validasi struktur kolom sesuai SectorsDB.php
+            // 4. Validasi struktur kolom sesuai ServicesDB.php
             $columns = $this->wpdb->get_results("DESCRIBE {$table}");
             $required_columns = [
                 'id' => 'bigint',
@@ -130,8 +130,8 @@ class SectorDemoData extends AbstractDemoData {
             }
 
             // 5. Validasi struktur data
-            foreach ($this->sectors as $index => $sector) {
-                if (!isset($sector['nama']) || empty($sector['nama'])) {
+            foreach ($this->services as $index => $service) {
+                if (!isset($service['nama']) || empty($service['nama'])) {
                     $this->debug("Error: Nama sektor kosong pada index $index");
                     return false;
                 }
@@ -161,32 +161,32 @@ class SectorDemoData extends AbstractDemoData {
             // Bersihkan data lama jika perlu
             if ($this->shouldClearData()) {
                 $this->debug('Membersihkan data lama...');
-                $this->wpdb->query("DELETE FROM {$this->wpdb->prefix}app_sectors WHERE id > 0");
-                $this->wpdb->query("ALTER TABLE {$this->wpdb->prefix}app_sectors AUTO_INCREMENT = 1");
+                $this->wpdb->query("DELETE FROM {$this->wpdb->prefix}app_services WHERE id > 0");
+                $this->wpdb->query("ALTER TABLE {$this->wpdb->prefix}app_services AUTO_INCREMENT = 1");
             }
 
             // Generate data baru
-            foreach ($this->sectors as $sector) {
-                $this->debug("Memproses sektor: {$sector['nama']}");
+            foreach ($this->services as $service) {
+                $this->debug("Memproses sektor: {$service['nama']}");
                 
                 // Cek duplikasi
                 $existing = $this->wpdb->get_var($this->wpdb->prepare(
-                    "SELECT id FROM {$this->wpdb->prefix}app_sectors WHERE nama = %s",
-                    $sector['nama']
+                    "SELECT id FROM {$this->wpdb->prefix}app_services WHERE nama = %s",
+                    $service['nama']
                 ));
 
                 if ($existing) {
-                    $this->debug("Sektor {$sector['nama']} sudah ada, melewati...");
+                    $this->debug("Sektor {$service['nama']} sudah ada, melewati...");
                     continue;
                 }
 
                 // Insert data
                 $current_user_id = get_current_user_id();
                 $inserted = $this->wpdb->insert(
-                    $this->wpdb->prefix . 'app_sectors',
+                    $this->wpdb->prefix . 'app_services',
                     [
-                        'nama' => $sector['nama'],
-                        'keterangan' => $sector['keterangan'] ?? '',
+                        'nama' => $service['nama'],
+                        'keterangan' => $service['keterangan'] ?? '',
                         'status' => 'active',
                         'created_by' => $current_user_id,
                         'created_at' => current_time('mysql'),
@@ -197,17 +197,17 @@ class SectorDemoData extends AbstractDemoData {
 
                 if ($inserted) {
                     $id = $this->wpdb->insert_id;
-                    self::$sector_ids[] = $id;
-                    $this->debug("Berhasil membuat sektor {$sector['nama']} dengan ID: $id");
+                    self::$service_ids[] = $id;
+                    $this->debug("Berhasil membuat sektor {$service['nama']} dengan ID: $id");
                 } else {
-                    throw new \Exception("Gagal insert sektor {$sector['nama']}");
+                    throw new \Exception("Gagal insert sektor {$service['nama']}");
                 }
             }
 
             // Bersihkan cache
             $this->debug('Membersihkan cache...');
-            $this->cache->invalidateDataTableCache('sector_list');
-            $this->cache->delete('sector_stats');
+            $this->cache->invalidateDataTableCache('service_list');
+            $this->cache->delete('service_stats');
 
             $this->debug('Generate data sektor selesai');
 
@@ -220,7 +220,7 @@ class SectorDemoData extends AbstractDemoData {
     /**
      * Dapatkan array ID sektor yang telah dibuat
      */
-    public function getSectorIds(): array {
-        return self::$sector_ids;
+    public function getServiceIds(): array {
+        return self::$service_ids;
     }
 }

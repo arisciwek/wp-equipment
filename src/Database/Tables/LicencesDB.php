@@ -1,22 +1,22 @@
 <?php
 /**
- * Licencees Table Schema
+ * Licences Table Schema
  *
  * @package     WP_Equipment
  * @subpackage  Database/Tables
  * @version     1.0.1
  * @author      arisciwek
  *
- * Path: /wp-equipment/src/Database/Tables/BranchesDB.php
+ * Path: /wp-equipment/src/Database/Tables/LicencesDB.php
  *
- * Description: Mendefinisikan struktur tabel licencees.
+ * Description: Mendefinisikan struktur tabel licences.
  *              Table prefix yang digunakan adalah 'app_'.
  *              Includes field untuk integrasi wilayah.
  *              Menyediakan foreign key ke equipments table.
  *
  * Fields:
  * - id             : Primary key
- * - equipment_id    : Foreign key ke equipment
+ * - equipment_id   : Foreign key ke equipment
  * - code           : Format 
  * - name           : Nama licence
  * - type           : Tipe wilayah (cabang)
@@ -42,10 +42,10 @@ namespace WPEquipment\Database\Tables;
 
 defined('ABSPATH') || exit;
 
-class LicenceesDB {
+class LicencesDB {
     public static function get_schema() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'app_licencees';
+        $table_name = $wpdb->prefix . 'app_licences';
         $charset_collate = $wpdb->get_charset_collate();
 
         return "CREATE TABLE {$table_name} (

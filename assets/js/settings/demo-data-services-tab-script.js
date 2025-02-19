@@ -1,26 +1,26 @@
 /**
- * Demo Data Sectors Tab Script
+ * Demo Data Services Tab Script
  *
  * @package     WP_Equipment
  * @subpackage  Assets/JS/Settings
  * @version     1.0.0
  * @author      arisciwek
  *
- * Path: /wp-equipment/assets/js/settings/demo-data-sectors-tab-script.js
+ * Path: /wp-equipment/assets/js/settings/demo-data-services-tab-script.js
  */
 jQuery(document).ready(function($) {
-    // Check sector button state on page load
+    // Check service button state on page load
     checkButtonState();
 
     function checkButtonState() {
-        const button = $('.generate-demo-data[data-type="sector"]');
+        const button = $('.generate-demo-data[data-type="service"]');
             
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'check_demo_data',
-                type: 'sector',
+                type: 'service',
                 nonce: button.data('nonce')
             },
             success: function(response) {
@@ -44,8 +44,8 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // Handle sector generation
-    $('.generate-demo-data[data-type="sector"]').on('click', function(e) {
+    // Handle service generation
+    $('.generate-demo-data[data-type="service"]').on('click', function(e) {
         e.preventDefault();
         const button = $(this);
         const nonce = button.data('nonce');
@@ -57,7 +57,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'generate_demo_data',
-                type: 'sector',
+                type: 'service',
                 nonce: nonce
             },
             success: function(response) {
@@ -89,7 +89,7 @@ jQuery(document).ready(function($) {
                 );
             },
             complete: function() {
-                button.prop('disabled', false).html('Generate Sectors');
+                button.prop('disabled', false).html('Generate Services');
                 checkButtonState();
             }
         });

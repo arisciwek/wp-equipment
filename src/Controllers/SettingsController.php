@@ -47,8 +47,8 @@ class SettingsController {
      */
     private function getGeneratorClass($type) {
         switch ($type) {
-            case 'sector':  // Tambahkan case untuk sector
-                return new \WPEquipment\Database\Demo\SectorDemoData();
+            case 'service':  // Tambahkan case untuk service
+                return new \WPEquipment\Database\Demo\ServiceDemoData();
             case 'category':
                 return new \WPEquipment\Database\Demo\CategoryDemoData();
             // Add other types as needed

@@ -16,7 +16,7 @@
  *
  * Tables Created:
  * - app_equipments
- * - app_licencees
+ * - app_licences
  * - app_equipment_employees
  * - app_equipment_membership_levels
  *
@@ -39,11 +39,11 @@ defined('ABSPATH') || exit;
 
 class Installer {
     private static $tables = [
-        'app_sectors',
+        'app_services',
         'app_groups',
         'app_categories',
         'app_equipments',
-        'app_licencees'
+        'app_licences'
     ];
 
     private static function debug($message) {
@@ -77,8 +77,8 @@ class Installer {
             self::debug("Starting database installation...");
 
             // Create tables in order of dependencies
-            self::debug("Creating sectors table...");
-            dbDelta(Tables\SectorsDB::get_schema());
+            self::debug("Creating services table...");
+            dbDelta(Tables\ServicesDB::get_schema());
 
             self::debug("Creating groups table...");
             dbDelta(Tables\GroupsDB::get_schema());
@@ -89,8 +89,8 @@ class Installer {
             self::debug("Creating equipments table...");
             dbDelta(Tables\EquipmentsDB::get_schema());
 
-            self::debug("Creating licencees table...");
-            dbDelta(Tables\LicenceesDB::get_schema());
+            self::debug("Creating licences table...");
+            dbDelta(Tables\LicencesDB::get_schema());
 
             // Verify all tables were created
             self::verify_tables();

@@ -1,13 +1,13 @@
 <?php
 /**
- * Sector Model Class
+ * Service Model Class
  *
  * @package     WP_Equipment
  * @subpackage  Models
  * @version     1.0.0
  * @author      arisciwek
  *
- * Path: /wp-equipment/src/Models/SectorModel.php
+ * Path: /wp-equipment/src/Models/ServiceModel.php
  *
  * Description: Model untuk operasi database sektor.
  *              Fokus pada operasi CRUD dan query.
@@ -16,14 +16,14 @@
 
 namespace WPEquipment\Models;
 
-class SectorModel {
+class ServiceModel {
     private $wpdb;
     private $table_name;
 
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
-        $this->table_name = $wpdb->prefix . 'app_sectors';
+        $this->table_name = $wpdb->prefix . 'app_services';
     }
 
     /**
@@ -33,7 +33,7 @@ class SectorModel {
         // Query dasar
         $select = "SELECT s.*, COUNT(g.id) as total_groups";
         $from = " FROM {$this->table_name} s";
-        $join = " LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.sector_id";
+        $join = " LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.service_id";
         $where = " WHERE 1=1";
         $group = " GROUP BY s.id";
 
@@ -86,7 +86,7 @@ class SectorModel {
         return $this->wpdb->get_row($this->wpdb->prepare("
             SELECT s.*, COUNT(g.id) as total_groups
             FROM {$this->table_name} s
-            LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.sector_id
+            LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.service_id
             WHERE s.id = %d
             GROUP BY s.id
         ", $id));
@@ -168,7 +168,7 @@ class SectorModel {
             SELECT EXISTS (
                 SELECT 1 
                 FROM {$this->wpdb->prefix}app_groups 
-                WHERE sector_id = %d
+                WHERE service_id = %d
             ) as has_groups",
             $id
         ));
@@ -177,14 +177,14 @@ class SectorModel {
     /**
      * Dapatkan statistik grup
      */
-    public function getGroupStats(int $sectorId): array {
+    public function getGroupStats(int $serviceId): array {
         $stats = $this->wpdb->get_row($this->wpdb->prepare("
             SELECT 
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active
             FROM {$this->wpdb->prefix}app_groups
-            WHERE sector_id = %d
-        ", $sectorId));
+            WHERE service_id = %d
+        ", $serviceId));
 
         return [
             'total' => (int) ($stats->total ?? 0),
@@ -216,18 +216,18 @@ class SectorModel {
         return (int) $this->wpdb->get_var("
             SELECT COUNT(DISTINCT s.id)
             FROM {$this->table_name} s
-            INNER JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.sector_id
+            INNER JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.service_id
         ");
     }
 
     /**
      * Dapatkan sektor terbaru
      */
-    public function getRecentSectors(int $limit = 5): array {
+    public function getRecentServices(int $limit = 5): array {
         return $this->wpdb->get_results($this->wpdb->prepare("
             SELECT s.*, COUNT(g.id) as total_groups
             FROM {$this->table_name} s
-            LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.sector_id
+            LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.service_id
             GROUP BY s.id
             ORDER BY s.created_at DESC
             LIMIT %d
@@ -235,11 +235,11 @@ class SectorModel {
     }
 
     // Cache-aware get methods
-    public function getAllSectors() {
-        $sectors = $this->wpdb->get_results(
+    public function getAllServices() {
+        $services = $this->wpdb->get_results(
             "SELECT * FROM {$this->table_name} WHERE status = 'active' ORDER BY nama ASC"
         );
 
-        return $sectors;
+        return $services;
     }
 }

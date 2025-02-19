@@ -1,20 +1,20 @@
 <?php
 /**
-* Sector Details Partial Template
+* Service Details Partial Template
 *
 * @package     WP_Equipment
-* @subpackage  Views/Templates/Sector/Partials
+* @subpackage  Views/Templates/Service/Partials
 * @version     1.0.0
 * @author      arisciwek
 *
-* Path: /wp-equipment/src/Views/templates/sector/partials/_sector_details.php
+* Path: /wp-equipment/src/Views/templates/service/partials/_service_details.php
 */
 
 defined('ABSPATH') || exit;
 ?>
 
-<div id="sector-details" class="tab-content active">
-    <div class="sector-details-grid">
+<div id="service-details" class="tab-content active">
+    <div class="service-details-grid">
         <!-- Basic Information -->
         <div class="postbox">
             <h3 class="hndle">
@@ -25,15 +25,15 @@ defined('ABSPATH') || exit;
                 <table class="form-table">
                     <tr>
                         <th><?php _e('Nama', 'wp-equipment'); ?></th>
-                        <td><span id="sector-nama"></span></td>
+                        <td><span id="service-nama"></span></td>
                     </tr>
                     <tr>
                         <th><?php _e('Keterangan', 'wp-equipment'); ?></th>
-                        <td><span id="sector-keterangan"></span></td>
+                        <td><span id="service-keterangan"></span></td>
                     </tr>
                     <tr>
                         <th><?php _e('Status', 'wp-equipment'); ?></th>
-                        <td><span id="sector-status" class="status-badge"></span></td>
+                        <td><span id="service-status" class="status-badge"></span></td>
                     </tr>
                 </table>
             </div>
@@ -49,11 +49,11 @@ defined('ABSPATH') || exit;
                 <table class="form-table">
                     <tr>
                         <th><?php _e('Total Groups', 'wp-equipment'); ?></th>
-                        <td><span id="sector-total-groups">0</span></td>
+                        <td><span id="service-total-groups">0</span></td>
                     </tr>
                     <tr>
                         <th><?php _e('Active Groups', 'wp-equipment'); ?></th>
-                        <td><span id="sector-active-groups">0</span></td>
+                        <td><span id="service-active-groups">0</span></td>
                     </tr>
                 </table>
             </div>
@@ -69,15 +69,15 @@ defined('ABSPATH') || exit;
                 <table class="form-table">
                     <tr>
                         <th><?php _e('Created By', 'wp-equipment'); ?></th>
-                        <td><span id="sector-created-by">-</span></td>
+                        <td><span id="service-created-by">-</span></td>
                     </tr>
                     <tr>
                         <th><?php _e('Created At', 'wp-equipment'); ?></th>
-                        <td><span id="sector-created-at">-</span></td>
+                        <td><span id="service-created-at">-</span></td>
                     </tr>
                     <tr>
                         <th><?php _e('Last Updated', 'wp-equipment'); ?></th>
-                        <td><span id="sector-updated-at">-</span></td>
+                        <td><span id="service-updated-at">-</span></td>
                     </tr>
                 </table>
             </div>

@@ -64,7 +64,7 @@ class WP_Equipment_Deactivator {
                 'app_equipments',             // Tabel independen
                 'app_categories',             // Tabel yang berelasi ke groups
                 'app_groups',                 // Tabel yang berelasi ke bidang jasa
-                'app_sectors'                 // Tabel master/parent
+                'app_services'                 // Tabel master/parent
 
             ];
 

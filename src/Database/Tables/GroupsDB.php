@@ -12,7 +12,7 @@
  * Description: Mendefinisikan struktur tabel groups.
  *              Table prefix yang digunakan adalah 'app_'.
  *              Includes field untuk dokumen dengan format DOCX/ODT.
- *              Menyediakan relasi antara sectors dan categories.
+ *              Menyediakan relasi antara services dan categories.
  */
 
 namespace WPEquipment\Database\Tables;
@@ -27,7 +27,7 @@ class GroupsDB {
 
         return "CREATE TABLE {$table_name} (
             id bigint(20) UNSIGNED NOT NULL auto_increment,
-            sector_id bigint(20) UNSIGNED NOT NULL,
+            service_id bigint(20) UNSIGNED NOT NULL,
             nama varchar(100) NOT NULL,
             keterangan text NULL,
             dokumen_path varchar(255) NULL,
@@ -37,12 +37,12 @@ class GroupsDB {
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
-            KEY sector_id_index (sector_id),
+            KEY service_id_index (service_id),
             KEY nama_index (nama),
             KEY status_index (status),
-            CONSTRAINT fk_group_sector 
-                FOREIGN KEY (sector_id) 
-                REFERENCES {$wpdb->prefix}app_sectors(id)
+            CONSTRAINT fk_group_service 
+                FOREIGN KEY (service_id) 
+                REFERENCES {$wpdb->prefix}app_services(id)
                 ON DELETE RESTRICT
                 ON UPDATE CASCADE
         ) $charset_collate;";

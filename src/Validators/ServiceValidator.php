@@ -1,13 +1,13 @@
 <?php
 /**
- * Sector Validator Class
+ * Service Validator Class
  *
  * @package     WP_Equipment
  * @subpackage  Validators
  * @version     1.0.0
  * @author      arisciwek
  *
- * Path: /wp-equipment/src/Validators/SectorValidator.php
+ * Path: /wp-equipment/src/Validators/ServiceValidator.php
  *
  * Description: Validator untuk data sektor.
  *              Handles validasi input untuk operasi CRUD.
@@ -20,20 +20,20 @@
 
 namespace WPEquipment\Validators;
 
-use WPEquipment\Models\SectorModel;
+use WPEquipment\Models\ServiceModel;
 
-class SectorValidator {
-    private SectorModel $model;
+class ServiceValidator {
+    private ServiceModel $model;
 
     public function __construct() {
-        $this->model = new SectorModel();
-        add_action('wp_ajax_validate_sector_access', [$this, 'validateAccess']);
+        $this->model = new ServiceModel();
+        add_action('wp_ajax_validate_service_access', [$this, 'validateAccess']);
     }
 
     public function validateAccess() {
         try {
             // Debug: log request yang masuk
-            error_log('Validating sector access. Request data: ' . print_r($_POST, true));
+            error_log('Validating service access. Request data: ' . print_r($_POST, true));
 
             // Cek nonce dengan debug
             $nonce_valid = check_ajax_referer('wp_equipment_nonce', 'nonce', false);
@@ -53,27 +53,27 @@ class SectorValidator {
 
             // Validasi ID
             $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-            error_log('Validating sector ID: ' . $id);
+            error_log('Validating service ID: ' . $id);
             
             if (!$id) {
-                throw new \Exception('Invalid sector ID');
+                throw new \Exception('Invalid service ID');
             }
 
             // Cek keberadaan sektor
-            $sector = $this->model->find($id);
-            error_log('Sector exists: ' . ($sector ? 'yes' : 'no'));
+            $service = $this->model->find($id);
+            error_log('Service exists: ' . ($service ? 'yes' : 'no'));
             
-            if (!$sector) {
-                throw new \Exception('Sector not found');
+            if (!$service) {
+                throw new \Exception('Service not found');
             }
 
             wp_send_json_success([
                 'message' => 'Access validated successfully',
-                'sector_id' => $id
+                'service_id' => $id
             ]);
 
         } catch (\Exception $e) {
-            error_log('Sector access validation error: ' . $e->getMessage());
+            error_log('Service access validation error: ' . $e->getMessage());
             
             wp_send_json_error([
                 'message' => $e->getMessage(),

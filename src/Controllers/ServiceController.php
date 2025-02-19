@@ -1,13 +1,13 @@
 <?php
 /**
- * Sector Controller Class
+ * Service Controller Class
  *
  * @package     WP_Equipment
  * @subpackage  Controllers
  * @version     1.0.0
  * @author      arisciwek
  *
- * Path: /wp-equipment/src/Controllers/SectorController.php
+ * Path: /wp-equipment/src/Controllers/ServiceController.php
  *
  * Description: Controller untuk mengelola data sektor.
  *              Menangani operasi CRUD dengan cache management.
@@ -18,21 +18,21 @@
 
 namespace WPEquipment\Controllers;
 
-use WPEquipment\Models\SectorModel;
-use WPEquipment\Validators\SectorValidator;
+use WPEquipment\Models\ServiceModel;
+use WPEquipment\Validators\ServiceValidator;
 use WPEquipment\Cache\EquipmentCacheManager;
 
-class SectorController {
-    private SectorModel $model;
-    private SectorValidator $validator;
+class ServiceController {
+    private ServiceModel $model;
+    private ServiceValidator $validator;
     private EquipmentCacheManager $cache;
     private string $log_file;
 
-    private const DEFAULT_LOG_FILE = 'logs/sector.log';
+    private const DEFAULT_LOG_FILE = 'logs/service.log';
 
     public function __construct() {
-        $this->model = new SectorModel();
-        $this->validator = new SectorValidator();
+        $this->model = new ServiceModel();
+        $this->validator = new ServiceValidator();
         $this->cache = new EquipmentCacheManager();
 
         // Initialize log file
@@ -40,31 +40,31 @@ class SectorController {
         $this->initLogDirectory();
 
         // Register AJAX handlers
-        add_action('wp_ajax_handle_sector_datatable', [$this, 'handleDataTableRequest']);
-        add_action('wp_ajax_get_sector', [$this, 'show']);
-        add_action('wp_ajax_create_sector', [$this, 'store']);
-        add_action('wp_ajax_update_sector', [$this, 'update']);
-        add_action('wp_ajax_delete_sector', [$this, 'delete']);
-        add_action('wp_ajax_get_sector_stats', [$this, 'getSectorStats']);
-        add_action('wp_ajax_create_sector_button', [$this, 'createSectorButton']);
+        add_action('wp_ajax_handle_service_datatable', [$this, 'handleDataTableRequest']);
+        add_action('wp_ajax_get_service', [$this, 'show']);
+        add_action('wp_ajax_create_service', [$this, 'store']);
+        add_action('wp_ajax_update_service', [$this, 'update']);
+        add_action('wp_ajax_delete_service', [$this, 'delete']);
+        add_action('wp_ajax_get_service_stats', [$this, 'getServiceStats']);
+        add_action('wp_ajax_create_service_button', [$this, 'createServiceButton']);
     }
 
     private function initLogDirectory(): void {
         $upload_dir = wp_upload_dir();
-        $sector_base_dir = $upload_dir['basedir'] . '/wp-equipment';
-        $sector_log_dir = $sector_base_dir . '/logs';
+        $service_base_dir = $upload_dir['basedir'] . '/wp-equipment';
+        $service_log_dir = $service_base_dir . '/logs';
         
-        $this->log_file = $sector_log_dir . '/sector-' . date('Y-m') . '.log';
+        $this->log_file = $service_log_dir . '/service-' . date('Y-m') . '.log';
 
-        if (!file_exists($sector_base_dir)) {
-            wp_mkdir_p($sector_base_dir);
+        if (!file_exists($service_base_dir)) {
+            wp_mkdir_p($service_base_dir);
             $htaccess_content = "Order deny,allow\nDeny from all";
-            @file_put_contents($sector_base_dir . '/.htaccess', $htaccess_content);
+            @file_put_contents($service_base_dir . '/.htaccess', $htaccess_content);
         }
 
-        if (!file_exists($sector_log_dir)) {
-            wp_mkdir_p($sector_log_dir);
-            @file_put_contents($sector_log_dir . '/.htaccess', $htaccess_content);
+        if (!file_exists($service_log_dir)) {
+            wp_mkdir_p($service_log_dir);
+            @file_put_contents($service_log_dir . '/.htaccess', $htaccess_content);
         }
     }
 
@@ -81,7 +81,7 @@ class SectorController {
         error_log("[{$timestamp}] {$message}\n", 3, $this->log_file);
     }
 
-    public function createSectorButton() {
+    public function createServiceButton() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
             
@@ -90,7 +90,7 @@ class SectorController {
                 return;
             }
 
-            $button = '<button type="button" class="button button-primary" id="add-sector-btn">';
+            $button = '<button type="button" class="button button-primary" id="add-service-btn">';
             $button .= '<span class="dashicons dashicons-plus-alt"></span>';
             $button .= __('Tambah Sektor', 'wp-equipment');
             $button .= '</button>';
@@ -124,12 +124,12 @@ class SectorController {
             $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'nama';
 
             // Try to get from cache first
-            $cache_key = "sector_datatable_{$start}_{$length}_{$search}_{$orderBy}_{$orderDir}";
-            $result = $this->cache->get('sector', $cache_key);
+            $cache_key = "service_datatable_{$start}_{$length}_{$search}_{$orderBy}_{$orderDir}";
+            $result = $this->cache->get('service', $cache_key);
 
             if ($result === null) {
                 $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
-                $this->cache->set('sector', $result, 300, $cache_key); // Cache for 5 minutes
+                $this->cache->set('service', $result, 300, $cache_key); // Cache for 5 minutes
             }
 
             // Format response
@@ -137,14 +137,14 @@ class SectorController {
                 'draw' => $draw,
                 'recordsTotal' => $result['total'],
                 'recordsFiltered' => $result['filtered'],
-                'data' => array_map(function($sector) {
+                'data' => array_map(function($service) {
                     return [
-                        'id' => $sector->id,
-                        'nama' => esc_html($sector->nama),
-                        'keterangan' => esc_html($sector->keterangan ?: '-'),
-                        'total_groups' => intval($sector->total_groups),
-                        'status' => esc_html($sector->status),
-                        'actions' => $this->generateActionButtons($sector)
+                        'id' => $service->id,
+                        'nama' => esc_html($service->nama),
+                        'keterangan' => esc_html($service->keterangan ?: '-'),
+                        'total_groups' => intval($service->total_groups),
+                        'status' => esc_html($service->status),
+                        'actions' => $this->generateActionButtons($service)
                     ];
                 }, $result['data'])
             ];
@@ -157,33 +157,33 @@ class SectorController {
         }
     }
 
-    private function generateActionButtons($sector): string {
+    private function generateActionButtons($service): string {
         if (!current_user_can('manage_options')) {
             return '';
         }
 
         $actions = sprintf(
-            '<button type="button" class="button view-sector" data-id="%d" title="%s">
+            '<button type="button" class="button view-service" data-id="%d" title="%s">
                 <i class="dashicons dashicons-visibility"></i>
             </button> ',
-            $sector->id,
+            $service->id,
             __('View', 'wp-equipment')
         );
 
         $actions .= sprintf(
-            '<button type="button" class="button edit-sector" data-id="%d" title="%s">
+            '<button type="button" class="button edit-service" data-id="%d" title="%s">
                 <i class="dashicons dashicons-edit"></i>
             </button> ',
-            $sector->id,
+            $service->id,
             __('Edit', 'wp-equipment')
         );
 
-        if (!$this->model->hasGroups($sector->id)) {
+        if (!$this->model->hasGroups($service->id)) {
             $actions .= sprintf(
-                '<button type="button" class="button delete-sector" data-id="%d" title="%s">
+                '<button type="button" class="button delete-service" data-id="%d" title="%s">
                     <i class="dashicons dashicons-trash"></i>
                 </button>',
-                $sector->id,
+                $service->id,
                 __('Delete', 'wp-equipment')
             );
         }
@@ -201,35 +201,35 @@ class SectorController {
 
             $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
             if (!$id) {
-                throw new \Exception('Invalid sector ID');
+                throw new \Exception('Invalid service ID');
             }
 
             // Try to get from cache first
-            $sector = $this->cache->get('sector_detail', $id);
+            $service = $this->cache->get('service_detail', $id);
             
-            if ($sector === null) {
-                $sector = $this->model->find($id);
-                if (!$sector) {
-                    throw new \Exception('Sector not found');
+            if ($service === null) {
+                $service = $this->model->find($id);
+                if (!$service) {
+                    throw new \Exception('Service not found');
                 }
-                $this->cache->set('sector_detail', $sector, 300, $id);
+                $this->cache->set('service_detail', $service, 300, $id);
             }
 
             // Format timestamps
-            $sector->created_at = mysql2date('Y-m-d H:i:s', $sector->created_at);
-            $sector->updated_at = mysql2date('Y-m-d H:i:s', $sector->updated_at);
+            $service->created_at = mysql2date('Y-m-d H:i:s', $service->created_at);
+            $service->updated_at = mysql2date('Y-m-d H:i:s', $service->updated_at);
 
             // Get creator info
-            if ($sector->created_by) {
-                $creator = get_userdata($sector->created_by);
-                $sector->created_by_name = $creator ? $creator->display_name : null;
+            if ($service->created_by) {
+                $creator = get_userdata($service->created_by);
+                $service->created_by_name = $creator ? $creator->display_name : null;
             }
 
             // Get group statistics
             $stats = $this->model->getGroupStats($id);
 
             wp_send_json_success([
-                'sector' => $sector,
+                'service' => $service,
                 'stats' => $stats,
                 'meta' => [
                     'can_edit' => current_user_can('manage_options'),
@@ -269,22 +269,22 @@ class SectorController {
                 return;
             }
 
-            // Create sector
+            // Create service
             $id = $this->model->create($data);
             if (!$id) {
-                throw new \Exception('Failed to create sector');
+                throw new \Exception('Failed to create service');
             }
 
             // Clear related caches
-            $this->cache->invalidateDataTableCache('sector_list');
-            $this->cache->delete('sector_stats');
+            $this->cache->invalidateDataTableCache('service_list');
+            $this->cache->delete('service_stats');
 
-            // Get created sector
-            $sector = $this->model->find($id);
+            // Get created service
+            $service = $this->model->find($id);
             
             wp_send_json_success([
-                'message' => __('Sector created successfully', 'wp-equipment'),
-                'sector' => $sector
+                'message' => __('Service created successfully', 'wp-equipment'),
+                'service' => $service
             ]);
 
         } catch (\Exception $e) {
@@ -302,7 +302,7 @@ class SectorController {
 
             $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
             if (!$id) {
-                throw new \Exception('Invalid sector ID');
+                throw new \Exception('Invalid service ID');
             }
 
             $data = [
@@ -321,22 +321,22 @@ class SectorController {
                 return;
             }
 
-            // Update sector
+            // Update service
             $updated = $this->model->update($id, $data);
             if (!$updated) {
-                throw new \Exception('Failed to update sector');
+                throw new \Exception('Failed to update service');
             }
 
             // Clear related caches
-            $this->cache->delete('sector_detail', $id);
-            $this->cache->invalidateDataTableCache('sector_list');
+            $this->cache->delete('service_detail', $id);
+            $this->cache->invalidateDataTableCache('service_list');
 
-            // Get updated sector
-            $sector = $this->model->find($id);
+            // Get updated service
+            $service = $this->model->find($id);
             
             wp_send_json_success([
-                'message' => __('Sector updated successfully', 'wp-equipment'),
-                'sector' => $sector
+                'message' => __('Service updated successfully', 'wp-equipment'),
+                'service' => $service
             ]);
 
         } catch (\Exception $e) {
@@ -354,7 +354,7 @@ class SectorController {
 
             $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
             if (!$id) {
-                throw new \Exception('Invalid sector ID');
+                throw new \Exception('Invalid service ID');
             }
 
             // Validate deletion
@@ -364,26 +364,26 @@ class SectorController {
                 return;
             }
 
-            // Get sector before deletion for response
-            $sector = $this->model->find($id);
-            if (!$sector) {
-                throw new \Exception('Sector not found');
+            // Get service before deletion for response
+            $service = $this->model->find($id);
+            if (!$service) {
+                throw new \Exception('Service not found');
             }
 
-            // Delete sector
+            // Delete service
             $deleted = $this->model->delete($id);
             if (!$deleted) {
-                throw new \Exception('Failed to delete sector');
+                throw new \Exception('Failed to delete service');
             }
 
             // Clear related caches
-            $this->cache->delete('sector_detail', $id);
-            $this->cache->invalidateDataTableCache('sector_list');
-            $this->cache->delete('sector_stats');
+            $this->cache->delete('service_detail', $id);
+            $this->cache->invalidateDataTableCache('service_list');
+            $this->cache->delete('service_stats');
 
             wp_send_json_success([
-                'message' => __('Sector deleted successfully', 'wp-equipment'),
-                'sector' => $sector
+                'message' => __('Service deleted successfully', 'wp-equipment'),
+                'service' => $service
             ]);
 
         } catch (\Exception $e) {
@@ -391,7 +391,7 @@ class SectorController {
         }
     }
 
-    public function getSectorStats() {
+    public function getServiceStats() {
         try {
             check_ajax_referer('wp_equipment_nonce', 'nonce');
 
@@ -400,18 +400,18 @@ class SectorController {
             }
 
             // Try to get from cache first
-            $stats = $this->cache->get('sector_stats');
+            $stats = $this->cache->get('service_stats');
             
             if ($stats === null) {
                 $stats = [
                     'total' => $this->model->getTotalCount(),
                     'active' => $this->model->getActiveCount(),
                     'with_groups' => $this->model->getCountWithGroups(),
-                    'recent' => $this->model->getRecentSectors(5)
+                    'recent' => $this->model->getRecentServices(5)
                 ];
                 
                 // Cache stats for 5 minutes
-                $this->cache->set('sector_stats', $stats, 300);
+                $this->cache->set('service_stats', $stats, 300);
             }
 
             wp_send_json_success($stats);
@@ -423,26 +423,26 @@ class SectorController {
         }
     }
 
-    public function createSector($data) {
+    public function createService($data) {
         try {
-            $sector_id = $this->sectorModel->create($data);
+            $service_id = $this->serviceModel->create($data);
             
-            if (!$sector_id) {
-                throw new \Exception("Gagal membuat sector");
+            if (!$service_id) {
+                throw new \Exception("Gagal membuat service");
             }
 
             // Clear related caches
-            $this->cache->invalidateDataTableCache('sector_list');
+            $this->cache->invalidateDataTableCache('service_list');
             
-            return $sector_id;
+            return $service_id;
         } catch (\Exception $e) {
-            error_log("Error in createSector: " . $e->getMessage());
+            error_log("Error in createService: " . $e->getMessage());
             return false;
         }
     }
 
-    public function createDemoSector($data) {
-        return $this->createSector($data);
+    public function createDemoService($data) {
+        return $this->createService($data);
     }
 
 }
