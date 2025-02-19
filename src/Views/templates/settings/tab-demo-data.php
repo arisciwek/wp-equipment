@@ -41,7 +41,21 @@ if (!current_user_can('manage_options')) {
                     <?php _e('Generate Services', 'wp-equipment'); ?>
                 </button>
             </div>
+
             
+            <!-- Groups (Dependent on Services) -->
+            <div class="demo-data-card">
+                <h4><?php _e('Groups', 'wp-equipment'); ?></h4>
+                <p><?php _e('Generate sample group data. Requires Services to be generated first.', 'wp-equipment'); ?></p>
+                <button type="button" 
+                        class="generate-demo-data" 
+                        data-type="group"
+                        data-dependency="service"
+                        data-nonce="<?php echo wp_create_nonce('generate_demo_group'); ?>">
+                    <?php _e('Generate Groups', 'wp-equipment'); ?>
+                </button>
+            </div>
+
             <!-- Categories -->
             <div class="demo-data-card">
                 <h4><?php _e('Categories', 'wp-equipment'); ?></h4>
@@ -49,6 +63,7 @@ if (!current_user_can('manage_options')) {
 					<button type="button" 
 					        class="generate-demo-data" 
 					        data-type="category"
+                            data-dependency="group"
 					        data-nonce="<?php echo wp_create_nonce('generate_demo_category'); ?>">
 					    <?php _e('Generate Categories', 'wp-equipment'); ?>
 					</button>

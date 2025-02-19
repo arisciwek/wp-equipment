@@ -1,6 +1,6 @@
 <?php
 /**
- * Generator Data Demo untuk Sektor
+ * Generator Data Demo untuk Service
  *
  * @package     WP_Equipment
  * @subpackage  Database/Demo
@@ -16,56 +16,111 @@ defined('ABSPATH') || exit;
 
 class ServiceDemoData extends AbstractDemoData {
     private static $service_ids = [];
-    protected $services =  [
+    protected $services = [
         [
-            'id' => 1, 
-            'nama' => 'Manufaktur',
-            'keterangan' => 'Sektor industri manufaktur dan pengolahan',
+            'id' => 4,
+            'singkatan' => 'DT',      // Destructive Testing
+            'nama' => 'Pengujian Merusak (DT)',
+            'keterangan' => 'Layanan pengujian dengan metode yang merusak spesimen uji',
+            'status' => 'inactive'
         ],
         [
-            'id' => 2, 
-            'nama' => 'Konstruksi',
-            'keterangan' => 'Sektor jasa konstruksi dan pembangunan',
+            'id' => 7,
+            'singkatan' => 'PAA',
+            'nama' => 'Pesawat Angkat dan Pesawat Angkut',
+            'keterangan' => 'Layanan terkait alat angkat dan alat angkut',
+            'status' => 'active'
         ],
         [
-            'id' => 3, 
-            'nama' => 'Transportasi',
-            'keterangan' => 'Sektor transportasi dan logistik',
+            'id' => 17,
+            'singkatan' => 'ILP',
+            'nama' => 'Listrik dan Instalasi Penyalur Petir',
+            'keterangan' => 'Layanan kelistrikan dan sistem proteksi petir',
+            'status' => 'active'
         ],
         [
-            'id' => 4, 
-            'nama' => 'Pertambangan',
-            'keterangan' => 'Sektor pertambangan dan penggalian',
+            'id' => 23,
+            'singkatan' => 'NDT',     // Non-Destructive Testing
+            'nama' => 'Pengujian Tidak Merusak (NDT) Non Radiasi',
+            'keterangan' => 'Layanan pengujian tanpa merusak dengan metode non-radiasi',
+            'status' => 'inactive'
         ],
         [
-            'id' => 5, 
-            'nama' => 'Telekomunikasi',
-            'keterangan' => 'Sektor telekomunikasi dan jaringan',
+            'id' => 24,
+            'singkatan' => 'NDTR',    // Non-Destructive Testing Radiation
+            'nama' => 'Pengujian Tidak Merusak (NDT) Radiasi',
+            'keterangan' => 'Layanan pengujian tanpa merusak dengan metode radiasi',
+            'status' => 'inactive'
         ],
         [
-            'id' => 6, 
-            'nama' => 'Kelistrikan',
-            'keterangan' => 'Sektor ketenagalistrikan',
+            'id' => 25,
+            'singkatan' => 'IPK',
+            'nama' => 'Sarana Proteksi Kebakaran',
+            'keterangan' => 'Layanan terkait sistem pencegahan dan penanggulangan kebakaran',
+            'status' => 'active'
         ],
         [
-            'id' => 7, 
-            'nama' => 'Elektronika',
-            'keterangan' => 'Sektor elektronika dan komponen',
+            'id' => 26,
+            'singkatan' => 'KBG',     // Konstruksi dan BanGunan
+            'nama' => 'Konstruksi dan Bangunan',
+            'keterangan' => 'Layanan terkait konstruksi dan bangunan',
+            'status' => 'inactive'
         ],
         [
-            'id' => 8, 
-            'nama' => 'Permesinan',
-            'keterangan' => 'Sektor permesinan dan peralatan',
+            'id' => 29,
+            'singkatan' => 'LK',      // Lingkungan Kerja
+            'nama' => 'Lingkungan Kerja',
+            'keterangan' => 'Layanan terkait keselamatan lingkungan kerja',
+            'status' => 'inactive'
         ],
         [
-            'id' => 9, 
-            'nama' => 'Pengujian & Kalibrasi',
-            'keterangan' => 'Sektor pengujian dan kalibrasi peralatan',
+            'id' => 30,
+            'singkatan' => 'BB',      // Bahan Berbahaya
+            'nama' => 'Bahan Berbahaya',
+            'keterangan' => 'Layanan terkait penanganan bahan berbahaya',
+            'status' => 'inactive'
         ],
         [
-            'id' => 10, 
-            'nama' => 'Teknologi Informasi',
-            'keterangan' => 'Sektor teknologi informasi dan komunikasi',
+            'id' => 31,
+            'singkatan' => 'AKR',     // AngKuR
+            'nama' => 'Angkur',
+            'keterangan' => 'Layanan terkait sistem pengangkuran',
+            'status' => 'inactive'
+        ],
+        [
+            'id' => 32,
+            'singkatan' => 'APD',     // Alat Pelindung Diri
+            'nama' => 'Alat Pelindung Diri dan Alat Penahan Jatuh Perorangan',
+            'keterangan' => 'Layanan terkait APD dan alat penahan jatuh',
+            'status' => 'inactive'
+        ],
+        [
+            'id' => 34,
+            'singkatan' => 'PTP',
+            'nama' => 'Pesawat Tenaga dan Produksi',
+            'keterangan' => 'Layanan terkait mesin tenaga dan peralatan produksi',
+            'status' => 'active'
+        ],
+        [
+            'id' => 35,
+            'singkatan' => 'PUBT',
+            'nama' => 'Pesawat Uap, Bejana Tekanan dan Tangki Timbun',
+            'keterangan' => 'Layanan terkait peralatan bertekanan dan tangki penyimpanan',
+            'status' => 'active'
+        ],
+        [
+            'id' => 36,
+            'singkatan' => 'LIE',
+            'nama' => 'Elevator dan Eskalator',
+            'keterangan' => 'Layanan terkait lift dan eskalator',
+            'status' => 'active'
+        ],
+        [
+            'id' => 66,
+            'singkatan' => 'RTL',     // ReTester LPG
+            'nama' => 'Retester Tabung LPG',
+            'keterangan' => 'Layanan pengujian ulang tabung LPG',
+            'status' => 'inactive'
         ]
     ];
 
@@ -176,7 +231,7 @@ class ServiceDemoData extends AbstractDemoData {
                 ));
 
                 if ($existing) {
-                    $this->debug("Sektor {$service['nama']} sudah ada, melewati...");
+                    $this->debug("Bidang jasa {$service['nama']} sudah ada, melewati...");
                     continue;
                 }
 
@@ -186,13 +241,14 @@ class ServiceDemoData extends AbstractDemoData {
                     $this->wpdb->prefix . 'app_services',
                     [
                         'nama' => $service['nama'],
+                        'singkatan' => $service['singkatan'],
                         'keterangan' => $service['keterangan'] ?? '',
                         'status' => 'active',
                         'created_by' => $current_user_id,
                         'created_at' => current_time('mysql'),
                         'updated_at' => current_time('mysql')
                     ],
-                    ['%s', '%s', '%s', '%d', '%s', '%s']
+                    ['%s', '%s',  '%s', '%s', '%d', '%s', '%s']
                 );
 
                 if ($inserted) {

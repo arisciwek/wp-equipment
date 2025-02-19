@@ -100,15 +100,16 @@ class ServiceModel {
             $this->table_name,
             [
                 'nama' => $data['nama'],
+                'singkatan' => $data['singkatan'] ?? null,
                 'keterangan' => $data['keterangan'] ?? null,
                 'status' => $data['status'] ?? 'active',
                 'created_by' => get_current_user_id(),
                 'created_at' => current_time('mysql'),
                 'updated_at' => current_time('mysql')
             ],
-            ['%s', '%s', '%s', '%d', '%s', '%s']
+            ['%s', '%s', '%s', '%s', '%d', '%s', '%s']
         );
-
+    
         return $result ? $this->wpdb->insert_id : null;
     }
 
@@ -120,18 +121,18 @@ class ServiceModel {
             $this->table_name,
             [
                 'nama' => $data['nama'],
+                'singkatan' => $data['singkatan'] ?? null,  // Menambahkan singkatan
                 'keterangan' => $data['keterangan'] ?? null,
                 'status' => $data['status'] ?? 'active',
                 'updated_at' => current_time('mysql')
             ],
             ['id' => $id],
-            ['%s', '%s', '%s', '%s'],
+            ['%s', '%s', '%s', '%s', '%s'],  // Menambahkan format untuk singkatan
             ['%d']
         );
-
+    
         return $result !== false;
     }
-
     /**
      * Hapus sektor
      */

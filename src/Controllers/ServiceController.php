@@ -92,7 +92,7 @@ class ServiceController {
 
             $button = '<button type="button" class="button button-primary" id="add-service-btn">';
             $button .= '<span class="dashicons dashicons-plus-alt"></span>';
-            $button .= __('Tambah Sektor', 'wp-equipment');
+            $button .= __('Tambah Bidang Jasa', 'wp-equipment');
             $button .= '</button>';
 
             wp_send_json_success(['button' => $button]);

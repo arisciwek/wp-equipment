@@ -119,7 +119,7 @@ class ServiceValidator {
         // Cek keberadaan sektor
         $existing = $this->model->find($id);
         if (!$existing) {
-            $errors[] = __('Sektor tidak ditemukan', 'wp-equipment');
+            $errors[] = __('Bidag jasa tidak ditemukan', 'wp-equipment');
             return $errors;
         }
 
