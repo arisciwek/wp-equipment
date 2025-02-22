@@ -107,7 +107,11 @@
                 .on('category:deleted.Category', () => this.handleDeleted())
                 .on('category:display.Category', (e, data) => this.displayData(data))
                 .on('category:loading.Category', () => this.showLoading())
-                .on('category:loaded.Category', () => this.hideLoading());
+                .on('category:loaded.Category', () => this.hideLoading())
+
+                .on('service:created.Category', () => this.handleServiceCreated())
+                .on('service:updated.Category', () => this.handleServiceUpdated())
+                .on('service:deleted.Category', () => this.handleServiceDeleted());
 
             // Panel events
             $('.wp-equipment-close-panel').off('click').on('click', () => this.closePanel());
@@ -346,6 +350,15 @@
                 case 'category-details':
                     // Tab details sudah memiliki konten statis dari template
                     break;
+            
+                case 'service':
+                    // Inisialisasi ServiceDataTable jika belum
+                    if (window.ServiceDataTable) {
+                        window.ServiceDataTable.refresh();
+                    } else if (typeof ServiceDataTable !== 'undefined') {
+                        ServiceDataTable.init();
+                    }
+                    break;
                     
                 case 'category-hierarchy':
                     // Tampilkan pesan "sedang dikembangkan"
@@ -488,6 +501,26 @@
            $('#total-categories').text(stats.total_categories);
            $('#total-branches').text(stats.total_branches);
            $('#total-employees').text(stats.total_employees);
+       },
+
+
+       // Tambahkan method handlers:
+       handleServiceCreated() {
+           if (window.ServiceDataTable) {
+               window.ServiceDataTable.refresh();
+           }
+       },
+   
+       handleServiceUpdated() {
+           if (window.ServiceDataTable) {
+               window.ServiceDataTable.refresh();
+           }
+       },
+   
+       handleServiceDeleted() {
+           if (window.ServiceDataTable) {
+               window.ServiceDataTable.refresh();
+           }
        }
 
     };
@@ -603,9 +636,7 @@
             localStorage.removeItem('category_access_error');
             localStorage.removeItem('category_access_response');
         }
-    }
-
-
+    };
 
     // Initialize when document is ready
     $(document).ready(() => {
@@ -614,4 +645,3 @@
     });
 
 })(jQuery);
-

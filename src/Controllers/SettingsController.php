@@ -46,6 +46,15 @@ class SettingsController {
      * Get the appropriate generator class based on data type
      */
     private function getGeneratorClass($type) {
+
+
+        error_log('=== Start WP Equipment getGeneratorClass ===');  // Log 1
+        error_log('Received type: ' . $type);          // Log 2
+        
+        error_log('getGeneratorClass received type: [' . $type . ']');
+        error_log('Type length: ' . strlen($type));
+        error_log('Type character codes: ' . json_encode(array_map('ord', str_split($type))));   
+
         switch ($type) {
             case 'service':
                     return new \WPEquipment\Database\Demo\ServiceDemoData();
@@ -61,6 +70,31 @@ class SettingsController {
 
     public function handle_generate_demo_data() {
         try {
+
+
+            error_log('=== Start handle_generate_demo_data ===');  // Log 1
+            
+            // Validasi permissions first
+            if (!current_user_can('manage_options')) {
+                error_log('Permission denied');  // Log 2
+                throw new \Exception('Permission denied');
+            }
+            error_log('Permission check passed');  // Log 3
+
+            // Get and sanitize input
+            $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
+            $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+            
+            error_log('POST data - type: ' . print_r($_POST['type'], true));  // Log 4
+            error_log('Sanitized type: ' . $type);  // Log 5
+            
+            if (!wp_verify_nonce($nonce, "generate_demo_{$type}")) {
+                error_log('Nonce verification failed');  // Log 6
+                throw new \Exception('Invalid security token');
+            }
+            error_log('Nonce verified');  // Log 7
+
+            
             // Validate permissions first
             if (!current_user_can('manage_options')) {
                 throw new \Exception('Permission denied');

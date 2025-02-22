@@ -85,8 +85,8 @@ class WPEquipment {
         // Equipment Controller
         $this->equipment_controller = new \WPEquipment\Controllers\EquipmentController();
 
-        // Licence Controller
         new \WPEquipment\Controllers\Licence\LicenceController();
+        new \WPEquipment\Controllers\ServiceController();  
 
         // Register AJAX handlers
         add_action('wp_ajax_get_equipment_stats', [$this->equipment_controller, 'getStats']);

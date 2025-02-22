@@ -104,56 +104,89 @@ class ServiceController {
 
     public function handleDataTableRequest() {
         try {
-            // Verify nonce and permissions
+            // Debug incoming request
+            error_log('Service DataTable Request: ' . print_r($_POST, true));
+            
+            // Debug nonce
+            error_log('Nonce from request: ' . $_POST['nonce']);
+            error_log('Expected nonce: ' . wp_create_nonce('wp_equipment_nonce'));
+
+            // Cek nonce validation
+            $nonce_check = check_ajax_referer('wp_equipment_nonce', 'nonce', false);
+            error_log('Nonce check result: ' . ($nonce_check ? 'valid' : 'invalid'));
+
+            if (!$nonce_check) {
+                wp_send_json_error([
+                    'message' => 'Invalid nonce',
+                    'debug' => [
+                        'provided_nonce' => $_POST['nonce'],
+                        'expected_nonce' => wp_create_nonce('wp_equipment_nonce')
+                    ]
+                ]);
+                return;
+            }       
+
             check_ajax_referer('wp_equipment_nonce', 'nonce');
+    
             if (!current_user_can('manage_options')) {
                 throw new \Exception('Insufficient permissions');
             }
-
-            // Get DataTable parameters
+    
             $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
             $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
             $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
             $search = isset($_POST['search']['value']) ? sanitize_text_field($_POST['search']['value']) : '';
-            
+    
             $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
             $orderDir = isset($_POST['order'][0]['dir']) ? sanitize_text_field($_POST['order'][0]['dir']) : 'asc';
-
-            // Define sortable columns
-            $columns = ['nama', 'keterangan', 'total_groups', 'status', 'actions'];
+    
+            $columns = ['singkatan', 'nama', 'keterangan', 'status', 'actions'];
             $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'nama';
-
-            // Try to get from cache first
-            $cache_key = "service_datatable_{$start}_{$length}_{$search}_{$orderBy}_{$orderDir}";
-            $result = $this->cache->get('service', $cache_key);
-
-            if ($result === null) {
-                $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
-                $this->cache->set('service', $result, 300, $cache_key); // Cache for 5 minutes
+    
+            if ($orderBy === 'actions') {
+                $orderBy = 'nama';
             }
+    
+            try {
+                $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
+    
+                error_log('Query result: ' . print_r($result, true));
 
-            // Format response
-            $response = [
-                'draw' => $draw,
-                'recordsTotal' => $result['total'],
-                'recordsFiltered' => $result['filtered'],
-                'data' => array_map(function($service) {
-                    return [
-                        'id' => $service->id,
-                        'nama' => esc_html($service->nama),
-                        'keterangan' => esc_html($service->keterangan ?: '-'),
-                        'total_groups' => intval($service->total_groups),
-                        'status' => esc_html($service->status),
-                        'actions' => $this->generateActionButtons($service)
-                    ];
-                }, $result['data'])
-            ];
-
-            wp_send_json($response);
-
+                if (!$result) {
+                    throw new \Exception('No data returned from model');
+                }
+    
+                $data = [];
+                if (!empty($result['data'])) {
+                    foreach ($result['data'] as $service) {
+                        $data[] = [
+                            'id' => $service->id,
+                            'singkatan' => esc_html($service->singkatan),
+                            'nama' => esc_html($service->nama),
+                            'keterangan' => $service->keterangan ? esc_html($service->keterangan) : '-',
+                            'status' => esc_html($service->status),
+                            'actions' => $this->generateActionButtons($service)
+                        ];
+                    }
+                }
+    
+                $response = [
+                    'draw' => $draw,
+                    'recordsTotal' => intval($result['total']),
+                    'recordsFiltered' => intval($result['filtered']), 
+                    'data' => $data
+                ];
+    
+                wp_send_json($response);
+    
+            } catch (\Exception $e) {
+                throw new \Exception('Database error: ' . $e->getMessage());
+            }
+    
         } catch (\Exception $e) {
-            $this->debug_log('DataTable Error: ' . $e->getMessage());
-            wp_send_json_error(['message' => $e->getMessage()]);
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
         }
     }
 

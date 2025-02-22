@@ -30,13 +30,12 @@ class ServiceModel {
      * Dapatkan data untuk DataTable
      */
     public function getDataTableData(int $start, int $length, string $search, string $orderBy, string $orderDir): array {
-        // Query dasar
-        $select = "SELECT s.*, COUNT(g.id) as total_groups";
+        // Query dasar untuk seluruh kolom yang diperlukan
+        $select = "SELECT SQL_CALC_FOUND_ROWS s.id, s.singkatan, s.nama, s.keterangan, s.status, COUNT(g.id) as total_groups";
         $from = " FROM {$this->table_name} s";
         $join = " LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.service_id";
         $where = " WHERE 1=1";
-        $group = " GROUP BY s.id";
-
+    
         // Tambah kondisi pencarian
         if (!empty($search)) {
             $where .= $this->wpdb->prepare(
@@ -45,13 +44,13 @@ class ServiceModel {
                 '%' . $this->wpdb->esc_like($search) . '%'
             );
         }
-
+    
         // Validasi order column
         $validColumns = ['nama', 'keterangan', 'status', 'total_groups'];
         if (!in_array($orderBy, $validColumns)) {
             $orderBy = 'nama';
         }
-
+    
         // Format order
         $orderBy = "s.{$orderBy}";
         if ($orderBy === 's.total_groups') {
@@ -60,25 +59,28 @@ class ServiceModel {
         
         $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
         $order = " ORDER BY {$orderBy} {$orderDir}";
-
+    
+        // Group by sebelum order
+        $group = " GROUP BY s.id";
+    
         // Tambah limit
         $limit = $this->wpdb->prepare(" LIMIT %d, %d", $start, $length);
-
-        // Execute query with SQL_CALC_FOUND_ROWS
-        $sql = "SELECT SQL_CALC_FOUND_ROWS " . substr($select . $from . $join . $where . $group . $order . $limit, 8);
+    
+        // Execute query
+        $sql = $select . $from . $join . $where . $group . $order . $limit;
         $results = $this->wpdb->get_results($sql);
-
+    
         // Get total dan filtered counts
         $total = $this->wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
         $filtered = $this->wpdb->get_var("SELECT FOUND_ROWS()");
-
+    
         return [
             'data' => $results,
             'total' => (int) $total,
             'filtered' => (int) $filtered
         ];
     }
-
+    
     /**
      * Dapatkan sektor berdasar ID
      */

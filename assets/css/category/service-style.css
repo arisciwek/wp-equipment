@@ -1,0 +1,364 @@
+/**
+ * Service Styles
+ *
+ * @package     WP_Equipment
+ * @subpackage  Assets/CSS/Service
+ * @version     1.0.0
+ * @author      arisciwek
+ *
+ * Path: /wp-equipment/assets/css/category/service-style.css
+ *
+ * Description: Styling untuk komponen service (layanan).
+ *              Includes table styling, form modals,
+ *              dan responsive adjustments.
+ *              Mengikuti WordPress admin styling conventions.
+ *
+ * Changelog:
+ * 1.0.0 - 2024-02-21
+ * - Initial styling
+ * - Added table styles
+ * - Added modal styles
+ * - Added responsive styles
+ */
+
+/* Service List Container */
+.wp-equipment-service-content {
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+}
+
+/* Header Actions */
+.wp-equipment-service-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #ccd0d4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.service-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* DataTable Customization */
+.wi-table-container {
+    padding: 20px;
+}
+
+#service-table {
+    width: 100% !important;
+    margin-top: 15px;
+}
+
+#service-table thead th {
+    background: #f5f5f5;
+    font-weight: 600;
+    padding: 12px;
+    white-space: nowrap;
+}
+
+#service-table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+#service-table .column-actions {
+    text-align: center;
+    width: 120px;
+    white-space: nowrap;
+}
+
+/* Status Badge Styling */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Action Buttons */
+.button.view-service,
+.button.edit-service,
+.button.delete-service {
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 28px;
+    text-align: center;
+    margin: 0 2px;
+}
+
+.button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1.4;
+}
+
+/* Form Styling */
+.service-form-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.section-header {
+    margin: -20px -20px 20px -20px;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    border-radius: 8px 8px 0 0;
+}
+
+.section-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.service-form-group {
+    margin-bottom: 20px;
+}
+
+.service-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.service-form-group input[type="text"],
+.service-form-group textarea,
+.service-form-group select {
+    width: 100%;
+    max-width: 25em;
+}
+
+.service-form-group .description {
+    color: #666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Required Field Indicator */
+.required-field::after {
+    content: '*';
+    color: #d63638;
+    margin-left: 4px;
+}
+
+/* Form Validation States */
+.service-form-group .error {
+    border-color: #d63638;
+}
+
+.service-form-group .form-error {
+    color: #d63638;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Active Row Highlight */
+#service-table tr.highlight {
+    background-color: #f0f6fc !important;
+    transition: background-color 0.5s ease;
+}
+
+/* Loading States */
+.service-loading-state,
+.empty-state,
+.error-state {
+    padding: 40px;
+    text-align: center;
+}
+
+.service-loading-state .spinner {
+    float: none;
+    margin: 0 auto 10px;
+}
+
+.empty-state-content,
+.error-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state-content .dashicons,
+.error-state-content .dashicons {
+    width: 48px;
+    height: 48px;
+    font-size: 48px;
+    color: #757575;
+    margin-bottom: 15px;
+}
+
+.empty-state-content h4,
+.error-state-content h4 {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.empty-state-content p,
+.error-state-content p {
+    margin: 0 0 15px;
+    color: #757575;
+}
+
+/* Modal Styling */
+.wp-equipment-modal .modal-content {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    display: flex;
+    gap: 20px;
+}
+
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 160000;
+}
+
+.modal-container {
+    max-width: 800px;
+    max-height: 90vh;
+    background: #f8f9fa;
+}
+
+.modal-header {
+    background: #fff;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.modal-close {
+    padding: 5px;
+    font-size: 20px;
+    color: #666;
+}
+
+.modal-footer {
+    background: #fff;
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Loading State */
+.loading .spinner {
+    visibility: visible;
+}
+
+.loading .button {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 782px) {
+    .wp-equipment-service-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .service-header-actions {
+        justify-content: flex-end;
+    }
+
+    .wi-table-container {
+        padding: 10px;
+        overflow-x: auto;
+    }
+
+    #service-table {
+        min-width: 600px;
+    }
+
+    #service-table th,
+    #service-table td {
+        padding: 8px;
+    }
+
+    .button.view-service,
+    .button.edit-service,
+    .button.delete-service {
+        width: 28px;
+        height: 28px;
+        line-height: 26px;
+    }
+
+    .service-form-group input[type="text"],
+    .service-form-group textarea,
+    .service-form-group select {
+        max-width: 100%;
+    }
+
+    .wp-equipment-modal .modal-content {
+        flex-direction: column;
+    }
+}
+
+/* DataTables Specific Customization */
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 1em;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    min-width: 60px;
+}
+
+.dataTables_wrapper .dataTables_info {
+    padding-top: 1em;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 1em;
+}
+
+/* Print Styles */
+@media print {
+    .wp-equipment-service-header,
+    .dataTables_filter,
+    .dataTables_length,
+    .dataTables_paginate,
+    .column-actions {
+        display: none !important;
+    }
+
+    .status-badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: none !important;
+    }
+}

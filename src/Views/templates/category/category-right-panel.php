@@ -24,8 +24,8 @@ defined('ABSPATH') || exit;
     // Load tab contents from separate files
     foreach ([
         'category/partials/_category_details.php',
-        'category/partials/_category_hierarchy.php'
-        'category/partials/_service_details.php',
+        'category/partials/_category_hierarchy.php',
+        'category/partials/_category_service_lists.php'
     ] as $template) {
         include_once WP_EQUIPMENT_PATH . 'src/Views/templates/' . $template;
     }

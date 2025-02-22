@@ -75,7 +75,7 @@ class WP_Equipment_Dependencies {
             wp_enqueue_style('datatables', 'https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css', [], '1.13.7');
 
             // Equipment styles
-            wp_enqueue_style('wp-equipment-equipment', WP_EQUIPMENT_URL . 'assets/css/equipment.css', [], $this->version);
+            wp_enqueue_style('wp-equipment-equipment', WP_EQUIPMENT_URL . 'assets/css/equipment-style.css', [], $this->version);
             wp_enqueue_style('wp-equipment-equipment-form', WP_EQUIPMENT_URL . 'assets/css/equipment-form.css', [], $this->version);
 
             // Licence styles
@@ -117,7 +117,13 @@ class WP_Equipment_Dependencies {
             $this->version
         );
 
-        error_log('Category styles enqueued'); // Debugging
+        // Tambahkan Service styles
+        wp_enqueue_style('wp-equipment-service', 
+            WP_EQUIPMENT_URL . 'assets/css/category/service-style.css',
+            [], 
+            $this->version
+        );
+
     }
 
     }
@@ -141,7 +147,7 @@ class WP_Equipment_Dependencies {
                     wp_enqueue_style('wp-equipment-general-tab', WP_EQUIPMENT_URL . 'assets/js/settings/general-tab-script.js', [], $this->version);
                     break;
                 case 'demo-data':
-                    wp_enqueue_script('wp-equipment-demo-data-tab', WP_EQUIPMENT_URL . 'assets/js/settings/demo-data-tab-script.js', ['jquery'], $this->version);
+                    wp_enqueue_script('wp-equipment-demo-data-tab', WP_EQUIPMENT_URL . 'assets/js/settings/equipment-demo-data-tab-script.js', ['jquery'], $this->version);
                     break;
             }
             return;
@@ -243,6 +249,33 @@ class WP_Equipment_Dependencies {
                     'success' => __('Success', 'wp-equipment')
                 ]
             ]);
+    
+            wp_enqueue_script('service-form', 
+                WP_EQUIPMENT_URL . 'assets/js/category/service-form.js', 
+                ['jquery', 'jquery-validate', 'equipment-toast'], 
+                $this->version, 
+                true
+            );
+
+            wp_enqueue_script('service-datatable', 
+                WP_EQUIPMENT_URL . 'assets/js/category/service-datatable.js', 
+                ['jquery', 'datatables', 'equipment-toast', 'service-form'], 
+                $this->version, 
+                true
+            );
+            
+            wp_localize_script('service-datatable', 'wpEquipmentData', [
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('wp_equipment_nonce'),
+                'texts' => [
+                    'loading' => __('Loading services...', 'wp-equipment'),
+                    'error' => __('Error loading services', 'wp-equipment'),
+                    'success' => __('Operation successful', 'wp-equipment'),
+                    'confirmDelete' => __('Are you sure you want to delete this service?', 'wp-equipment'),
+                    'noData' => __('No services found', 'wp-equipment')
+                ]
+            ]);
+    
         }
 
 
