@@ -26,6 +26,7 @@ defined('ABSPATH') || exit;
         'category/partials/_category_details.php',
         'category/partials/_category_hierarchy.php',
         'category/partials/_category_service_lists.php'
+        //'category/partials/_category_group_lists.php'
     ] as $template) {
         include_once WP_EQUIPMENT_PATH . 'src/Views/templates/' . $template;
     }

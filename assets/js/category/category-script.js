@@ -525,96 +525,118 @@
 
     };
 
-       $('.wp-mpdf-category-detail-export-pdf').on('click', function() {
-           const categoryId = $('#current-category-id').val();
-           
-           $.ajax({
-               url: wpEquipmentData.ajaxUrl,
-               type: 'POST',
-               data: {
-                   action: 'generate_category_pdf',
-                   id: categoryId,
-                   nonce: wpEquipmentData.nonce
-               },
-               xhrFields: {
-                   responseType: 'blob'
-               },
-               success: function(response) {
-                   const blob = new Blob([response], { type: 'application/pdf' });
-                   const url = window.URL.createObjectURL(blob);
-                   const a = document.createElement('a');
-                   a.href = url;
-                   a.download = `category-${categoryId}.pdf`;
-                   document.body.appendChild(a);
-                   a.click();
-                   window.URL.revokeObjectURL(url);
-               },
-               error: function() {
-                   EquipmentToast.error('Failed to generate PDF');
-               }
-           });
-       });
+    $.ajax({
+        url: wpEquipmentData.ajaxUrl,
+        type: 'POST',
+        data: {
+            action: 'create_service_button',
+            nonce: wpEquipmentData.nonce
+        },
+        success: (response) => {
+            if (response.success) {
+                $('#tombol-tambah-service').html(response.data.button);
+                
+                // Bind click event using delegation
+                $('#tombol-tambah-service').off('click', '#add-service-btn')
+                    .on('click', '#add-service-btn', () => {
+                        if (window.ServiceForm) {
+                            window.ServiceForm.showModal();
+                        }
+                    });
+            }
+        }
+    });
 
-       // Document generation handlers
-       $('.wp-docgen-category-detail-expot-document').on('click', function() {
-           const categoryId = $('#current-category-id').val();
-           
-           $.ajax({
-               url: wpEquipmentData.ajaxUrl,
-               type: 'POST',
-               data: {
-                   action: 'generate_wp_docgen_category_detail_document',
-                   id: categoryId,
-                   nonce: wpEquipmentData.nonce
-               },
-               success: function(response) {
-                   if (response.success) {
-                       // Create hidden link and trigger download
-                       const a = document.createElement('a');
-                       a.href = response.data.file_url;
-                       a.download = response.data.filename;
-                       document.body.appendChild(a);
-                       a.click();
-                       document.body.removeChild(a);
-                   } else {
-                       EquipmentToast.error(response.data.message || 'Failed to generate DOCX');
-                   }
-               },
-               error: function() {
-                   EquipmentToast.error('Failed to generate DOCX');
-               }
-           });
-       });
+    $('.wp-mpdf-category-detail-export-pdf').on('click', function() {
+        const categoryId = $('#current-category-id').val();
+        
+        $.ajax({
+            url: wpEquipmentData.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'generate_category_pdf',
+                id: categoryId,
+                nonce: wpEquipmentData.nonce
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function(response) {
+                const blob = new Blob([response], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `category-${categoryId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: function() {
+                EquipmentToast.error('Failed to generate PDF');
+            }
+        });
+    });
 
-       $('.wp-docgen-category-detail-expot-pdf').on('click', function() {
-           const categoryId = $('#current-category-id').val();
-           
-           $.ajax({
-               url: wpEquipmentData.ajaxUrl,
-               type: 'POST',
-               data: {
-                   action: 'generate_wp_docgen_category_detail_pdf',
-                   id: categoryId,
-                   nonce: wpEquipmentData.nonce
-               },
-               success: function(response) {
-                   if (response.success) {
-                       // Create hidden link and trigger download
-                       const a = document.createElement('a');
-                       a.href = response.data.file_url;
-                       a.download = response.data.filename;
-                       document.body.appendChild(a);
-                       a.click();
-                       document.body.removeChild(a);
-                   } else {
-                       EquipmentToast.error(response.data.message || 'Failed to generate PDF');
-                   }
-               },
-               error: function() {
-                   EquipmentToast.error('Failed to generate PDF');
-               }
-           });
-       });
+    // Document generation handlers
+    $('.wp-docgen-category-detail-expot-document').on('click', function() {
+        const categoryId = $('#current-category-id').val();
+        
+        $.ajax({
+            url: wpEquipmentData.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'generate_wp_docgen_category_detail_document',
+                id: categoryId,
+                nonce: wpEquipmentData.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Create hidden link and trigger download
+                    const a = document.createElement('a');
+                    a.href = response.data.file_url;
+                    a.download = response.data.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    EquipmentToast.error(response.data.message || 'Failed to generate DOCX');
+                }
+            },
+            error: function() {
+                EquipmentToast.error('Failed to generate DOCX');
+            }
+        });
+    });
+
+    $('.wp-docgen-category-detail-expot-pdf').on('click', function() {
+        const categoryId = $('#current-category-id').val();
+        
+        $.ajax({
+            url: wpEquipmentData.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'generate_wp_docgen_category_detail_pdf',
+                id: categoryId,
+                nonce: wpEquipmentData.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Create hidden link and trigger download
+                    const a = document.createElement('a');
+                    a.href = response.data.file_url;
+                    a.download = response.data.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    EquipmentToast.error(response.data.message || 'Failed to generate PDF');
+                }
+            },
+            error: function() {
+                EquipmentToast.error('Failed to generate PDF');
+            }
+        });
+    });
 
     // Tambahkan di akhir category-script.js
     function checkLastCategoryError() {

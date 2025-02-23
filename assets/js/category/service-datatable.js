@@ -84,7 +84,8 @@
                         const requestData = {
                             ...d,
                             action: 'handle_service_datatable',
-                            nonce: wpEquipmentData.nonce
+                            nonce: wpEquipmentData.nonce,
+                            draw: d.draw || 1
                         };
                         // Debug: log request data
                         console.log('DataTable request data:', requestData);
@@ -179,6 +180,44 @@
                     }
                     this.handleDelete(id);
                 });
+        },
+
+        handleDelete(id) {
+            if (!id) return;
+        
+            WIModal.show({
+                title: 'Konfirmasi Hapus',
+                message: 'Yakin ingin menghapus layanan ini? Aksi ini tidak dapat dibatalkan.',
+                icon: 'trash',
+                type: 'danger',
+                confirmText: 'Hapus',
+                confirmClass: 'button-danger',
+                cancelText: 'Batal',
+                onConfirm: async () => {
+                    try {
+                        const response = await $.ajax({
+                            url: wpEquipmentData.ajaxUrl,
+                            type: 'POST',
+                            data: {
+                                action: 'delete_service',
+                                id: id,
+                                nonce: wpEquipmentData.nonce
+                            }
+                        });
+        
+                        if (response.success) {
+                            EquipmentToast.success('Layanan berhasil dihapus');
+                            this.refresh();
+                            $(document).trigger('service:deleted');
+                        } else {
+                            EquipmentToast.error(response.data?.message || 'Gagal menghapus layanan');
+                        }
+                    } catch (error) {
+                        console.error('Delete service error:', error);
+                        EquipmentToast.error('Gagal menghubungi server');
+                    }
+                }
+            });
         }
     };
 

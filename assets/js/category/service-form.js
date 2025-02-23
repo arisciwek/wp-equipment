@@ -114,19 +114,20 @@
                         nonce: wpEquipmentData.nonce
                     }
                 });
-
-                if (response.success && response.data) {
+        
+                if (response.success && response.data.service) {
                     const service = response.data.service;
                     
-                    // Populate form
-                    this.form.find('#service-id').val(service.id);
-                    this.form.find('[name="nama"]').val(service.nama);
-                    this.form.find('[name="singkatan"]').val(service.singkatan);
-                    this.form.find('[name="keterangan"]').val(service.keterangan);
-                    this.form.find('[name="status"]').val(service.status);
+                    // Tampilkan modal dengan mode edit
+                    this.showModal(service.id, true);
                     
-                    // Show edit mode
-                    this.showModal(this.categoryId, true);
+                    // Populate form fields yang sesuai dengan struktur form
+                    this.form.find('#service-id').val(service.id);
+                    this.form.find('#service-name').val(service.nama);
+                    this.form.find('#service-singkatan').val(service.singkatan);
+                    this.form.find('#service-keterangan').val(service.keterangan || '');
+                    this.form.find('#service-status').val(service.status);
+        
                 } else {
                     EquipmentToast.error(response.data?.message || 'Gagal memuat data layanan');
                 }

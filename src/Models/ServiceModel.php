@@ -30,49 +30,42 @@ class ServiceModel {
      * Dapatkan data untuk DataTable
      */
     public function getDataTableData(int $start, int $length, string $search, string $orderBy, string $orderDir): array {
-        // Query dasar untuk seluruh kolom yang diperlukan
-        $select = "SELECT SQL_CALC_FOUND_ROWS s.id, s.singkatan, s.nama, s.keterangan, s.status, COUNT(g.id) as total_groups";
+        // Base query
+        $select = "SELECT SQL_CALC_FOUND_ROWS s.id, s.singkatan, s.nama, s.keterangan, s.status";
         $from = " FROM {$this->table_name} s";
-        $join = " LEFT JOIN {$this->wpdb->prefix}app_groups g ON s.id = g.service_id";
         $where = " WHERE 1=1";
-    
-        // Tambah kondisi pencarian
+        
+        // Search condition
         if (!empty($search)) {
             $where .= $this->wpdb->prepare(
-                " AND (s.nama LIKE %s OR s.keterangan LIKE %s)",
+                " AND (s.nama LIKE %s OR s.singkatan LIKE %s)",
                 '%' . $this->wpdb->esc_like($search) . '%',
                 '%' . $this->wpdb->esc_like($search) . '%'
             );
         }
     
-        // Validasi order column
-        $validColumns = ['nama', 'keterangan', 'status', 'total_groups'];
-        if (!in_array($orderBy, $validColumns)) {
-            $orderBy = 'nama';
-        }
-    
-        // Format order
-        $orderBy = "s.{$orderBy}";
-        if ($orderBy === 's.total_groups') {
-            $orderBy = 'total_groups';
-        }
-        
-        $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
-        $order = " ORDER BY {$orderBy} {$orderDir}";
-    
-        // Group by sebelum order
-        $group = " GROUP BY s.id";
-    
-        // Tambah limit
+        // Order and limit
+        $order = " ORDER BY s.{$orderBy} {$orderDir}";
         $limit = $this->wpdb->prepare(" LIMIT %d, %d", $start, $length);
     
-        // Execute query
-        $sql = $select . $from . $join . $where . $group . $order . $limit;
-        $results = $this->wpdb->get_results($sql);
+        // Execute main query
+        $final_query = $select . $from . $where . $order . $limit;
+        $results = $this->wpdb->get_results($final_query);
     
-        // Get total dan filtered counts
-        $total = $this->wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
-        $filtered = $this->wpdb->get_var("SELECT FOUND_ROWS()");
+        // Get total records without any filter
+        $total_query = "SELECT COUNT(*) FROM {$this->table_name}";
+        $total = $this->wpdb->get_var($total_query);
+    
+        // Get total filtered records
+        $filtered_query = "SELECT COUNT(*) FROM {$this->table_name} s WHERE 1=1";
+        if (!empty($search)) {
+            $filtered_query .= $this->wpdb->prepare(
+                " AND (s.nama LIKE %s OR s.singkatan LIKE %s)",
+                '%' . $this->wpdb->esc_like($search) . '%',
+                '%' . $this->wpdb->esc_like($search) . '%'
+            );
+        }
+        $filtered = $this->wpdb->get_var($filtered_query);
     
         return [
             'data' => $results,

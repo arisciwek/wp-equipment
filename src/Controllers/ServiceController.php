@@ -148,6 +148,25 @@ class ServiceController {
             }
     
             try {
+
+                // 3. Check cache
+                $cached_result = $this->cache->getDataTableCache(
+                    'service_list',
+                    get_current_user_id(),
+                    $start, 
+                    $length,
+                    $search,
+                    $orderBy,
+                    $orderDir,
+                    $response
+                );
+
+                if ($cached_result !== null) {
+                    $this->debug_log('Returning cached data');
+                    wp_send_json($cached_result);
+                    return;
+                }
+
                 $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
     
                 error_log('Query result: ' . print_r($result, true));
@@ -176,6 +195,17 @@ class ServiceController {
                     'recordsFiltered' => intval($result['filtered']), 
                     'data' => $data
                 ];
+
+                $this->cache->setDataTableCache(
+                    'service_list',
+                    get_current_user_id(),
+                    $start,
+                    $length,
+                    $search,
+                    $orderBy,
+                    $orderDir,
+                    $response
+                );
     
                 wp_send_json($response);
     
@@ -288,6 +318,7 @@ class ServiceController {
 
             $data = [
                 'nama' => sanitize_text_field($_POST['nama']),
+                'singkatan' => sanitize_text_field($_POST['singkatan']),
                 'keterangan' => sanitize_textarea_field($_POST['keterangan'] ?? ''),
                 'status' => 'active'
             ];
@@ -340,6 +371,7 @@ class ServiceController {
 
             $data = [
                 'nama' => sanitize_text_field($_POST['nama']),
+                'singkatan' => sanitize_text_field($_POST['singkatan']), // Tambahkan ini
                 'keterangan' => sanitize_textarea_field($_POST['keterangan'] ?? ''),
                 'status' => sanitize_text_field($_POST['status'] ?? 'active')
             ];

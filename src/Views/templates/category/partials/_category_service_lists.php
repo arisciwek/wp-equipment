@@ -34,6 +34,7 @@ defined('ABSPATH') || exit;
             <div id="tombol-tambah-service"></div>
         </div>
     </div>
+    
     <div class="services-table-wrapper">
         <table id="services-table" class="display" style="width:100%">
             <thead>
@@ -50,4 +51,8 @@ defined('ABSPATH') || exit;
 <?php
 // Include modal form (combined create/edit form)
 require_once WP_EQUIPMENT_PATH . 'src/Views/templates/category/forms/service-form.php';
+require_once WP_EQUIPMENT_PATH . 'src/Views/components/confirmation-modal.php';
+
+// Render confirmation modal
+wp_equipment_render_confirmation_modal();
 ?>
