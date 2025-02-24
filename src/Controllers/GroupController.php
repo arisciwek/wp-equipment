@@ -149,21 +149,80 @@ class GroupController {
             $columns = ['nama', 'service_nama', 'dokumen_type', 'status'];
             $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'nama';
     
-            // Get data from model dengan parameter lengkap
-            $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir, $service_id);
+            try {
+                // Check cache first
+                $cached_result = $this->cache->getDataTableCache(
+                    'group_list',
+                    $service_id ?: 1,
+                    $start, 
+                    $length,
+                    $search,
+                    $orderBy,
+                    $orderDir
+                );
     
-            // Format response
-            $response = [
-                'draw' => $draw,
-                'recordsTotal' => $result['total'],
-                'recordsFiltered' => $result['filtered'],
-                'data' => $result['data']
-            ];
+                if ($cached_result !== null) {
+                    $this->debug_log('Returning cached data for group list');
+                    wp_send_json($cached_result);
+                    return;
+                }
     
-            wp_send_json($response);
+                // If not in cache, get data from model
+                $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir, $service_id);
+    
+                if (!$result) {
+                    throw new \Exception('No data returned from model');
+                }
+    
+                // Format data for response
+                $data = [];
+                if (!empty($result['data'])) {
+                    foreach ($result['data'] as $group) {
+                        $data[] = [
+                            'id' => $group->id,
+                            'nama' => esc_html($group->nama),
+                            'service_nama' => esc_html($group->service_nama),
+                            'dokumen_type' => $group->dokumen_type ? esc_html($group->dokumen_type) : null,
+                            'status' => esc_html($group->status),
+                            'actions' => $this->generateActionButtons($group)
+                        ];
+                    }
+                }
+    
+                // Format response sesuai spesifikasi DataTables
+                $response = [
+                    'draw' => $draw,
+                    'recordsTotal' => intval($result['total']),
+                    'recordsFiltered' => intval($result['filtered']),
+                    'data' => $data
+                ];
+    
+                // Store in cache
+                $this->cache->setDataTableCache(
+                    'group_list',
+                    $service_id ?: 1,
+                    $start,
+                    $length,
+                    $search,
+                    $orderBy,
+                    $orderDir,
+                    $response
+                );
+    
+                wp_send_json($response);
+                return;
+    
+            } catch (\Exception $e) {
+                $this->debug_log('DataTable Error: ' . $e->getMessage());
+                throw new \Exception('Database error: ' . $e->getMessage());
+            }
     
         } catch (\Exception $e) {
-            wp_send_json_error(['message' => $e->getMessage()]);
+            $this->debug_log('Ajax Handler Error: ' . $e->getMessage());
+            wp_send_json_error([
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
         }
     }
 
