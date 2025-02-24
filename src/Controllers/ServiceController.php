@@ -152,13 +152,12 @@ class ServiceController {
                 // 3. Check cache
                 $cached_result = $this->cache->getDataTableCache(
                     'service_list',
-                    get_current_user_id(),
+                    1,
                     $start, 
                     $length,
                     $search,
                     $orderBy,
-                    $orderDir,
-                    $response
+                    $orderDir
                 );
 
                 if ($cached_result !== null) {
@@ -198,7 +197,7 @@ class ServiceController {
 
                 $this->cache->setDataTableCache(
                     'service_list',
-                    get_current_user_id(),
+                    1,
                     $start,
                     $length,
                     $search,

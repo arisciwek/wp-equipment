@@ -43,54 +43,51 @@ class GroupModel {
      * Dapatkan data untuk DataTable
      */
     public function getDataTableData(int $start, int $length, string $search, string $orderBy, string $orderDir): array {
-        // Query dasar
-        $select = "SELECT g.*, s.nama as service_nama";
-        $from = " FROM {$this->table_name} g";
-        $join = " LEFT JOIN {$this->wpdb->prefix}app_services s ON g.service_id = s.id";
-        $where = " WHERE 1=1";
+    // Query dasar - Perbaiki syntax SELECT dengan menambahkan prefix tabel
+    $select = "SELECT g.*, s.nama as service_nama";
+    $from = " FROM {$this->table_name} g";
+    $join = " LEFT JOIN {$this->wpdb->prefix}app_services s ON g.service_id = s.id";
+    $where = " WHERE 1=1";
 
-        // Tambah kondisi pencarian
-        if (!empty($search)) {
-            $where .= $this->wpdb->prepare(
-                " AND (g.nama LIKE %s OR g.keterangan LIKE %s OR s.nama LIKE %s)",
-                '%' . $this->wpdb->esc_like($search) . '%',
-                '%' . $this->wpdb->esc_like($search) . '%',
-                '%' . $this->wpdb->esc_like($search) . '%'
-            );
-        }
-
-        // Validasi order column
-        $validColumns = ['nama', 'service_nama', 'dokumen_type', 'status'];
-        if (!in_array($orderBy, $validColumns)) {
-            $orderBy = 'nama';
-        }
-
-        // Format order
-        $orderBy = "g.{$orderBy}";
-        if ($orderBy === 'g.service_nama') {
-            $orderBy = 's.nama';
-        }
-        
-        $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
-        $order = " ORDER BY {$orderBy} {$orderDir}";
-
-        // Tambah limit
-        $limit = $this->wpdb->prepare(" LIMIT %d, %d", $start, $length);
-
-        // Execute query with SQL_CALC_FOUND_ROWS
-        $sql = "SELECT SQL_CALC_FOUND_ROWS " . substr($select . $from . $join . $where . $order . $limit, 8);
-        $results = $this->wpdb->get_results($sql);
-
-        // Get total dan filtered counts
-        $total = $this->wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
-        $filtered = $this->wpdb->get_var("SELECT FOUND_ROWS()");
-
-        return [
-            'data' => $results,
-            'total' => (int) $total,
-            'filtered' => (int) $filtered
-        ];
+    // Tambah kondisi pencarian
+    if (!empty($search)) {
+        $where .= $this->wpdb->prepare(
+            " AND (g.nama LIKE %s OR g.keterangan LIKE %s OR s.nama LIKE %s)",
+            '%' . $this->wpdb->esc_like($search) . '%',
+            '%' . $this->wpdb->esc_like($search) . '%',
+            '%' . $this->wpdb->esc_like($search) . '%'
+        );
     }
+
+    // Validasi order column
+    $validColumns = ['nama', 'service_nama', 'dokumen_type', 'status'];
+    if (!in_array($orderBy, $validColumns)) {
+        $orderBy = 'nama';
+    }
+
+    // Format order dengan prefix tabel yang benar
+    $orderBy = ($orderBy === 'service_nama') ? 's.nama' : "g.{$orderBy}";
+    $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
+    $order = " ORDER BY {$orderBy} {$orderDir}";
+
+    // Tambah limit
+    $limit = $this->wpdb->prepare(" LIMIT %d, %d", $start, $length);
+
+    // Execute query dengan SQL_CALC_FOUND_ROWS
+    // Perbaiki syntax dengan menghapus substr dan langsung menggunakan SELECT
+    $sql = $select . $from . $join . $where . $order . $limit;
+    $results = $this->wpdb->get_results($sql);
+
+    // Get total dan filtered counts
+    $total = $this->wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
+    $filtered = $this->wpdb->get_var("SELECT FOUND_ROWS()");
+
+    return [
+        'data' => $results,
+        'total' => (int) $total,
+        'filtered' => (int) $filtered
+    ];
+}
 
     /**
      * Dapatkan grup berdasar ID

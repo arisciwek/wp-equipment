@@ -16,6 +16,7 @@ defined('ABSPATH') || exit;
     <div class="nav-tab-wrapper">
         <a href="#" class="nav-tab nav-tab-active" data-tab="category-details">Details</a>
         <a href="#" class="nav-tab" data-tab="service">Service</a>
+        <a href="#" class="nav-tab" data-tab="group">Group</a>
         <a href="#" class="nav-tab" data-tab="category-hierarchy">Hierarchy</a>
     </div>
 </div>
@@ -25,8 +26,8 @@ defined('ABSPATH') || exit;
     foreach ([
         'category/partials/_category_details.php',
         'category/partials/_category_hierarchy.php',
-        'category/partials/_category_service_lists.php'
-        //'category/partials/_category_group_lists.php'
+        'category/partials/_category_service_lists.php',
+        'category/partials/_category_group_lists.php'
     ] as $template) {
         include_once WP_EQUIPMENT_PATH . 'src/Views/templates/' . $template;
     }

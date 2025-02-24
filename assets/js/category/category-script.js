@@ -111,7 +111,11 @@
 
                 .on('service:created.Category', () => this.handleServiceCreated())
                 .on('service:updated.Category', () => this.handleServiceUpdated())
-                .on('service:deleted.Category', () => this.handleServiceDeleted());
+                .on('service:deleted.Category', () => this.handleServiceDeleted())
+
+                .on('group:created.Category', (e, data) => this.handleGroupCreated(data))
+                .on('group:updated.Category', (e, data) => this.handleGroupUpdated(data))
+                .on('group:deleted.Category', () => this.handleGroupDeleted());
 
             // Panel events
             $('.wp-equipment-close-panel').off('click').on('click', () => this.closePanel());
@@ -299,16 +303,16 @@
         }
     }, 
 
-   handleLoadError() {
+    handleLoadError() {
        this.components.detailsPanel.html(
            '<div class="error-message">' +
            '<p>Failed to load category data. Please try again.</p>' +
            '<button class="button retry-load">Retry</button>' +
            '</div>'
        );
-   },
+    },
   
-     getLevelLabel(level) {
+    getLevelLabel(level) {
         const labels = {
             1: 'Level 1 - Kategori Utama',
             2: 'Level 2 - Sub Kategori',
@@ -316,64 +320,74 @@
         };
         return labels[level] || `Level ${level}`;
     },
-             // Helper function untuk label capability
-           getCapabilityLabel(cap) {
-               const labels = {
-                   'can_add_staff': 'Dapat menambah staff',
-                   'can_export': 'Dapat export data',
-                   'can_bulk_import': 'Dapat bulk import'
-               };
-               return labels[cap] || cap;
-           },
+    
+    // Helper function untuk label capability
+    getCapabilityLabel(cap) {
+        const labels = {
+            'can_add_staff': 'Dapat menambah staff',
+            'can_export': 'Dapat export data',
+            'can_bulk_import': 'Dapat bulk import'
+        };
+        return labels[cap] || cap;
+    },
 
-           // Helper function untuk logika tampilan tombol upgrade
-           shouldShowUpgradeOption(currentLevel, targetLevel) {
-               const levels = ['regular', 'priority', 'utama'];
-               const currentIdx = levels.indexOf(currentLevel);
-               const targetIdx = levels.indexOf(targetLevel);
-               return targetIdx > currentIdx;
-           },
+    // Helper function untuk logika tampilan tombol upgrade
+    shouldShowUpgradeOption(currentLevel, targetLevel) {
+        const levels = ['regular', 'priority', 'utama'];
+        const currentIdx = levels.indexOf(currentLevel);
+        const targetIdx = levels.indexOf(targetLevel);
+        return targetIdx > currentIdx;
+    },
 
-           switchTab(tabId) {
-            // Hapus tab yang aktif sebelumnya
-            $('.nav-tab').removeClass('nav-tab-active');
-            $(`.nav-tab[data-tab="${tabId}"]`).addClass('nav-tab-active');
+    switchTab(tabId) {
+        // Hapus tab yang aktif sebelumnya
+        $('.nav-tab').removeClass('nav-tab-active');
+        $(`.nav-tab[data-tab="${tabId}"]`).addClass('nav-tab-active');
+
+        // Sembunyikan semua konten tab
+        $('.tab-content').hide();
         
-            // Sembunyikan semua konten tab
-            $('.tab-content').hide();
-            
-            // Tampilkan konten tab yang dipilih
-            $(`#${tabId}`).show();
+        // Tampilkan konten tab yang dipilih
+        $(`#${tabId}`).show();
+
+        // Handle konten tab spesifik
+        switch(tabId) {
+            case 'category-details':
+                // Tab details sudah memiliki konten statis dari template
+                break;
         
-            // Handle konten tab spesifik
-            switch(tabId) {
-                case 'category-details':
-                    // Tab details sudah memiliki konten statis dari template
-                    break;
-            
-                case 'service':
-                    // Inisialisasi ServiceDataTable jika belum
-                    if (window.ServiceDataTable) {
-                        window.ServiceDataTable.refresh();
-                    } else if (typeof ServiceDataTable !== 'undefined') {
-                        ServiceDataTable.init();
-                    }
-                    break;
-                    
-                case 'category-hierarchy':
-                    // Tampilkan pesan "sedang dikembangkan"
-                    $('#category-hierarchy').html(`
-                        <div class="notice notice-info">
-                            <p>${wpEquipmentData.texts.development_notice || 'Fitur ini sedang dalam pengembangan'}</p>
-                        </div>
-                    `);
-                    break;
-                    
-                default:
-                    console.warn('Tab tidak dikenal:', tabId);
-                    break;
+            case 'service':
+                // Inisialisasi ServiceDataTable jika belum
+                if (window.ServiceDataTable) {
+                    window.ServiceDataTable.refresh();
+                } else if (typeof ServiceDataTable !== 'undefined') {
+                    ServiceDataTable.init();
+                }
+                break;
+        
+            case 'group':  // Tambahkan case untuk group
+                // Inisialisasi GroupDataTable jika belum
+                if (window.GroupDataTable) {
+                    GroupDataTable.refresh();
+                } else if (typeof GroupDataTable !== 'undefined') {
+                    GroupDataTable.init();
+                }
+                break;
+                
+            case 'category-hierarchy':
+                // Tampilkan pesan "sedang dikembangkan"
+                $('#category-hierarchy').html(`
+                    <div class="notice notice-info">
+                        <p>${wpEquipmentData.texts.development_notice || 'Fitur ini sedang dalam pengembangan'}</p>
+                    </div>
+                `);
+                break;
+                
+            default:
+                console.warn('Tab tidak dikenal:', tabId);
+                break;
             }
-        
+
             // Trigger event ketika tab berubah
             $(document).trigger('category:tabChanged', [tabId]);
         },
@@ -394,59 +408,56 @@
             this.components.rightPanel.removeClass('loading');
         },
 
-
-
-       handleCreated(data) {
-        if (data && data.data && data.data.id) {
-            // Update hash
-            window.location.hash = data.data.id;
-            
-            // Reset dan aktifkan tab details
-            $('.nav-tab').removeClass('nav-tab-active');
-            $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
-            $('.tab-content').removeClass('active').hide();
-            $('#category-details').addClass('active').show();
-            
-            // Buka panel kanan
-            $('.wp-category-container').addClass('with-right-panel');
-            $('.wp-category-right-panel').addClass('visible');
-            
-            // Refresh DataTable
-            if (window.CategoryDataTable) {
-                window.CategoryDataTable.refresh();
+        handleCreated(data) {
+            if (data && data.data && data.data.id) {
+                // Update hash
+                window.location.hash = data.data.id;
+                
+                // Reset dan aktifkan tab details
+                $('.nav-tab').removeClass('nav-tab-active');
+                $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
+                $('.tab-content').removeClass('active').hide();
+                $('#category-details').addClass('active').show();
+                
+                // Buka panel kanan
+                $('.wp-category-container').addClass('with-right-panel');
+                $('.wp-category-right-panel').addClass('visible');
+                
+                // Refresh DataTable
+                if (window.CategoryDataTable) {
+                    window.CategoryDataTable.refresh();
+                }
             }
-        }
-    },
+        },
 
-    handleUpdated(response) {
-        if (response && response.data && response.data.category) {
-            const editedCategoryId = response.data.category.id;
-            
-            // Update hash jika belum sesuai
-            if (window.location.hash !== `#${editedCategoryId}`) {
-                window.location.hash = editedCategoryId;
+        handleUpdated(response) {
+            if (response && response.data && response.data.category) {
+                const editedCategoryId = response.data.category.id;
+                
+                // Update hash jika belum sesuai
+                if (window.location.hash !== `#${editedCategoryId}`) {
+                    window.location.hash = editedCategoryId;
+                }
+                
+                // Reset dan aktifkan tab details
+                $('.nav-tab').removeClass('nav-tab-active');
+                $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
+                $('.tab-content').removeClass('active').hide();
+                $('#category-details').addClass('active').show();
+                
+                // Buka panel kanan
+                $('.wp-category-container').addClass('with-right-panel');
+                $('.wp-category-right-panel').addClass('visible');
+                
+                // Update display data
+                this.displayData(response.data);
+                
+                // Refresh DataTable
+                if (window.CategoryDataTable) {
+                    window.CategoryDataTable.refresh();
+                }
             }
-            
-            // Reset dan aktifkan tab details
-            $('.nav-tab').removeClass('nav-tab-active');
-            $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
-            $('.tab-content').removeClass('active').hide();
-            $('#category-details').addClass('active').show();
-            
-            // Buka panel kanan
-            $('.wp-category-container').addClass('with-right-panel');
-            $('.wp-category-right-panel').addClass('visible');
-            
-            // Update display data
-            this.displayData(response.data);
-            
-            // Refresh DataTable
-            if (window.CategoryDataTable) {
-                window.CategoryDataTable.refresh();
-            }
-        }
-    },
-          
+        },
 
         handleDeleted() {
             this.closePanel();
@@ -454,7 +465,7 @@
                 window.CategoryDataTable.refresh();
             }
             if (window.Dashboard) {
-               window.Dashboard.loadStats(); // Gunakan loadStats() langsung
+                window.Dashboard.loadStats(); // Gunakan loadStats() langsung
             }
         },
 
@@ -521,7 +532,26 @@
            if (window.ServiceDataTable) {
                window.ServiceDataTable.refresh();
            }
-       }
+       },
+
+       // Tambahkan di bagian yang sama dengan service handlers
+        handleGroupCreated() {
+            if (window.GroupDataTable) {
+                window.GroupDataTable.refresh();
+            }
+        },
+
+        handleGroupUpdated() {
+            if (window.GroupDataTable) {
+                window.GroupDataTable.refresh();
+            }
+        },
+
+        handleGroupDeleted() {
+            if (window.GroupDataTable) {
+                window.GroupDataTable.refresh();
+            }
+        }
 
     };
 
@@ -541,6 +571,29 @@
                     .on('click', '#add-service-btn', () => {
                         if (window.ServiceForm) {
                             window.ServiceForm.showModal();
+                        }
+                    });
+            }
+        }
+    });
+
+    // Tambahkan di bagian yang sama dengan service button creation
+    $.ajax({
+        url: wpEquipmentData.ajaxUrl,
+        type: 'POST',
+        data: {
+            action: 'create_group_button',
+            nonce: wpEquipmentData.nonce
+        },
+        success: (response) => {
+            if (response.success) {
+                $('#tombol-tambah-group').html(response.data.button);
+                
+                // Bind click event using delegation
+                $('#tombol-tambah-group').off('click', '#add-group-btn')
+                    .on('click', '#add-group-btn', () => {
+                        if (window.GroupForm) {
+                            window.GroupForm.showModal();
                         }
                     });
             }

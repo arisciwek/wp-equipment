@@ -132,10 +132,10 @@ class GroupController {
             if (!current_user_can('manage_options')) {
                 throw new \Exception('Insufficient permissions');
             }
-
+    
             // Get service ID if filtering by service
             $service_id = isset($_POST['service_id']) ? intval($_POST['service_id']) : null;
-
+    
             // Get DataTable parameters
             $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
             $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
@@ -144,55 +144,25 @@ class GroupController {
             
             $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
             $orderDir = isset($_POST['order'][0]['dir']) ? sanitize_text_field($_POST['order'][0]['dir']) : 'asc';
-
+    
             // Define sortable columns
-            $columns = ['nama', 'service_nama', 'dokumen_type', 'status', 'actions'];
+            $columns = ['nama', 'service_nama', 'dokumen_type', 'status'];
             $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'nama';
-
-            // Try to get from cache first
-            $cache_key = "group_datatable_{$start}_{$length}_{$search}_{$orderBy}_{$orderDir}";
-            if ($service_id) {
-                $cache_key .= "_{$service_id}";
-            }
-            
-            $result = $this->cache->get('group', $cache_key);
-
-            if ($result === null) {
-                $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir, $service_id);
-                $this->cache->set('group', $result, 300, $cache_key); // Cache for 5 minutes
-            }
-
+    
+            // Get data from model dengan parameter lengkap
+            $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir, $service_id);
+    
             // Format response
             $response = [
                 'draw' => $draw,
                 'recordsTotal' => $result['total'],
                 'recordsFiltered' => $result['filtered'],
-                'data' => array_map(function($group) {
-                    $doc_link = '';
-                    if ($group->dokumen_path && $group->dokumen_type) {
-                        $doc_link = sprintf(
-                            '<a href="%s" target="_blank" class="button">%s</a>',
-                            esc_url(site_url($group->dokumen_path)),
-                            esc_html(strtoupper($group->dokumen_type))
-                        );
-                    }
-
-                    return [
-                        'id' => $group->id,
-                        'nama' => esc_html($group->nama),
-                        'service_nama' => esc_html($group->service_nama),
-                        'keterangan' => esc_html($group->keterangan ?: '-'),
-                        'dokumen' => $doc_link,
-                        'status' => esc_html($group->status),
-                        'actions' => $this->generateActionButtons($group)
-                    ];
-                }, $result['data'])
+                'data' => $result['data']
             ];
-
+    
             wp_send_json($response);
-
+    
         } catch (\Exception $e) {
-            $this->debug_log('DataTable Error: ' . $e->getMessage());
             wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
