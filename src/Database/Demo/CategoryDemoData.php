@@ -14,6 +14,7 @@
  *              - Support multiple level depth
  *              - Tracking parent-child relationships
  *              - PNBP dan unit untuk kategori tertentu
+ *              - Kode alfanumerik acak 10 digit
  */
 
 namespace WPEquipment\Database\Demo;
@@ -25,6 +26,7 @@ defined('ABSPATH') || exit;
 class CategoryDemoData extends AbstractDemoData {
     private static $category_ids = [];
     protected $categories;
+    private $used_codes = [];
 
     public function __construct() {
         parent::__construct();
@@ -37,6 +39,38 @@ class CategoryDemoData extends AbstractDemoData {
         if (!isset($this->categoryModel)) {
             $this->categoryModel = new \WPEquipment\Models\CategoryModel();
         }
+    }
+
+    /**
+     * Generates a random alphanumeric code of specified length
+     * Uses only A-Z, a-z, and 1-9 characters (no 0)
+     *
+     * @param int $length Length of the code
+     * @return string Random alphanumeric code
+     */
+    private function generateAlphanumericCode($length = 10): string {
+        // Characters to use (A-Z, a-z, 1-9)
+        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789';
+        $code = '';
+        
+        // Get the maximum index value
+        $max_index = strlen($chars) - 1;
+        
+        // Generate random characters
+        for ($i = 0; $i < $length; $i++) {
+            $code .= $chars[mt_rand(0, $max_index)];
+        }
+        
+        // Make sure the code is unique
+        if (in_array($code, $this->used_codes) || $this->categoryModel->existsByCode($code)) {
+            // If code already exists, generate a new one
+            return $this->generateAlphanumericCode($length);
+        }
+        
+        // Add to used codes
+        $this->used_codes[] = $code;
+        
+        return $code;
     }
 
     protected function validate(): bool {
@@ -60,12 +94,6 @@ class CategoryDemoData extends AbstractDemoData {
                         throw new \Exception("Parent ID {$category['parent_id']} not found for category {$category['name']}");
                     }
                 }
-            }
-
-            // Validate unique codes
-            $codes = array_column($this->categories, 'code');
-            if (count($codes) !== count(array_unique($codes))) {
-                throw new \Exception('Duplicate category codes found');
             }
 
             $this->debug('Category data validation successful');
@@ -134,7 +162,6 @@ class CategoryDemoData extends AbstractDemoData {
         }
     }
 
-
     protected function generate(): void {
         if (!$this->isDevelopmentMode()) {
             $this->debug('Tidak dapat generate data - mode development tidak aktif');
@@ -155,16 +182,19 @@ class CategoryDemoData extends AbstractDemoData {
             });
 
             foreach ($this->categories as $category) {
+                // Generate kode alfanumerik acak 10 digit
+                $randomCode = $this->generateAlphanumericCode(10);
+                
                 // Periksa apakah kategori sudah ada
-                $existing = $this->categoryModel->existsByCode($category['code']);
+                $existing = $this->categoryModel->existsByCode($randomCode);
                 if ($existing) {
-                    $this->debug("Kategori dengan kode {$category['code']} sudah ada, melewati...");
-                    continue;
+                    $this->debug("Kategori dengan kode {$randomCode} sudah ada, mencoba kode baru...");
+                    $randomCode = $this->generateAlphanumericCode(10);
                 }
 
-                // Siapkan data kategori
+                // Siapkan data kategori dengan mempertahankan nama lengkap dan kode acak
                 $categoryData = [
-                    'code' => $category['code'],
+                    'code' => $randomCode,
                     'name' => $category['name'],
                     'description' => $category['description'],
                     'level' => $category['level'],
@@ -183,7 +213,7 @@ class CategoryDemoData extends AbstractDemoData {
                 }
 
                 self::$category_ids[] = $inserted_id;
-                $this->debug("Berhasil membuat kategori: {$category['name']} dengan ID: {$inserted_id}");
+                $this->debug("Berhasil membuat kategori: {$category['name']} dengan ID: {$inserted_id} dan kode: {$randomCode}");
             }
 
         } catch (\Exception $e) {
@@ -191,7 +221,6 @@ class CategoryDemoData extends AbstractDemoData {
             throw $e;
         }
     }
-    
     
     /**
      * Get array of generated category IDs

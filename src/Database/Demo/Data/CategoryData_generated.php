@@ -1371,4 +1371,3 @@ class CategoryData {
         ],
     ];
 }
-

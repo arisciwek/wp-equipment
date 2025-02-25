@@ -16,111 +16,118 @@ defined('ABSPATH') || exit;
 
 class ServiceDemoData extends AbstractDemoData {
     private static $service_ids = [];
-    protected $services = [
+    protected $groups = [
+        [
+            'id' => 1,
+            'service_id' => 2, // PAA - Pesawat Angkat dan Pesawat Angkut
+            'nama' => 'Pesawat Angkat',
+            'keterangan' => 'Peralatan untuk mengangkat beban secara vertikal dan memindahkannya secara horizontal dalam jarak tertentu',
+            'dokumen_type' => 'docx'
+        ],
+        [
+            'id' => 2,
+            'service_id' => 2, // PAA - Pesawat Angkat dan Pesawat Angkut
+            'nama' => 'Pesawat Angkut',
+            'keterangan' => 'Peralatan yang digunakan untuk mengangkut material atau barang',
+            'dokumen_type' => 'docx'
+        ],
+        [
+            'id' => 3,
+            'service_id' => 2, // PAA - Pesawat Angkat dan Pesawat Angkut
+            'nama' => 'Alat Bantu Angkat Angkut',
+            'keterangan' => 'Peralatan pendukung untuk operasi pengangkatan dan pengangkutan material',
+            'dokumen_type' => 'docx'
+        ],
         [
             'id' => 4,
-            'singkatan' => 'DT',      // Destructive Testing
-            'nama' => 'Pengujian Merusak (DT)',
-            'keterangan' => 'Layanan pengujian dengan metode yang merusak spesimen uji',
-            'status' => 'inactive'
+            'service_id' => 13, // PUBT - Pesawat Uap, Bejana Tekanan dan Tangki Timbun
+            'nama' => 'Tangki Timbun',
+            'keterangan' => 'Wadah penyimpanan bahan bakar atau bahan kimia dengan kapasitas besar',
+            'dokumen_type' => 'docx'
+        ],
+        [
+            'id' => 5,
+            'service_id' => 13, // PUBT - Pesawat Uap, Bejana Tekanan dan Tangki Timbun
+            'nama' => 'Bejana Uap',
+            'keterangan' => 'Bejana tertutup yang digunakan untuk menghasilkan uap dengan tekanan lebih besar dari tekanan atmosfer',
+            'dokumen_type' => 'docx'
+        ],
+        [
+            'id' => 6,
+            'service_id' => 13, // PUBT - Pesawat Uap, Bejana Tekanan dan Tangki Timbun
+            'nama' => 'Bejana Tekanan',
+            'keterangan' => 'Wadah tertutup yang dirancang untuk menampung gas atau cairan pada tekanan yang berbeda dari tekanan ambien',
+            'dokumen_type' => 'docx'
         ],
         [
             'id' => 7,
-            'singkatan' => 'PAA',
-            'nama' => 'Pesawat Angkat dan Pesawat Angkut',
-            'keterangan' => 'Layanan terkait alat angkat dan alat angkut',
-            'status' => 'active'
+            'service_id' => 12, // PTP - Pesawat Tenaga dan Produksi
+            'nama' => 'Penggerak Mula',
+            'keterangan' => 'Mesin atau peralatan yang mengubah energi dari bentuk lain menjadi energi mekanik',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 17,
-            'singkatan' => 'ILP',
-            'nama' => 'Listrik dan Instalasi Penyalur Petir',
-            'keterangan' => 'Layanan kelistrikan dan sistem proteksi petir',
-            'status' => 'active'
+            'id' => 8,
+            'service_id' => 12, // PTP - Pesawat Tenaga dan Produksi
+            'nama' => 'Mesin Konvensional',
+            'keterangan' => 'Mesin atau peralatan produksi dengan pengoperasian manual atau semi-otomatis',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 23,
-            'singkatan' => 'NDT',     // Non-Destructive Testing
-            'nama' => 'Pengujian Tidak Merusak (NDT) Non Radiasi',
-            'keterangan' => 'Layanan pengujian tanpa merusak dengan metode non-radiasi',
-            'status' => 'inactive'
+            'id' => 9,
+            'service_id' => 12, // PTP - Pesawat Tenaga dan Produksi
+            'nama' => 'Mesin Terkomputerisasi',
+            'keterangan' => 'Mesin atau peralatan produksi dengan sistem kontrol berbasis komputer',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 24,
-            'singkatan' => 'NDTR',    // Non-Destructive Testing Radiation
-            'nama' => 'Pengujian Tidak Merusak (NDT) Radiasi',
-            'keterangan' => 'Layanan pengujian tanpa merusak dengan metode radiasi',
-            'status' => 'inactive'
+            'id' => 10,
+            'service_id' => 12, // PTP - Pesawat Tenaga dan Produksi
+            'nama' => 'Transmisi Tenaga Mekanik',
+            'keterangan' => 'Sistem yang mentransmisikan daya dari satu lokasi ke lokasi lain',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 25,
-            'singkatan' => 'IPK',
-            'nama' => 'Sarana Proteksi Kebakaran',
-            'keterangan' => 'Layanan terkait sistem pencegahan dan penanggulangan kebakaran',
-            'status' => 'active'
+            'id' => 11,
+            'service_id' => 12, // PTP - Pesawat Tenaga dan Produksi
+            'nama' => 'Tanur',
+            'keterangan' => 'Ruang tertutup yang digunakan untuk memanas bahan pada suhu tinggi',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 26,
-            'singkatan' => 'KBG',     // Konstruksi dan BanGunan
-            'nama' => 'Konstruksi dan Bangunan',
-            'keterangan' => 'Layanan terkait konstruksi dan bangunan',
-            'status' => 'inactive'
+            'id' => 12,
+            'service_id' => 3, // ILP - Listrik dan Instalasi Penyalur Petir
+            'nama' => 'Instalasi Listrik',
+            'keterangan' => 'Sistem pemasangan peralatan listrik yang saling terhubung untuk memenuhi tujuan tertentu',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 29,
-            'singkatan' => 'LK',      // Lingkungan Kerja
-            'nama' => 'Lingkungan Kerja',
-            'keterangan' => 'Layanan terkait keselamatan lingkungan kerja',
-            'status' => 'inactive'
+            'id' => 13,
+            'service_id' => 3, // ILP - Listrik dan Instalasi Penyalur Petir
+            'nama' => 'Penyalur Petir Konvensional',
+            'keterangan' => 'Sistem proteksi petir dengan metode konvensional',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 30,
-            'singkatan' => 'BB',      // Bahan Berbahaya
-            'nama' => 'Bahan Berbahaya',
-            'keterangan' => 'Layanan terkait penanganan bahan berbahaya',
-            'status' => 'inactive'
+            'id' => 14,
+            'service_id' => 3, // ILP - Listrik dan Instalasi Penyalur Petir
+            'nama' => 'Penyalur Petir Elektrostatik',
+            'keterangan' => 'Sistem proteksi petir dengan teknologi elektrostatik',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 31,
-            'singkatan' => 'AKR',     // AngKuR
-            'nama' => 'Angkur',
-            'keterangan' => 'Layanan terkait sistem pengangkuran',
-            'status' => 'inactive'
+            'id' => 15,
+            'service_id' => 6, // IPK - Sarana Proteksi Kebakaran
+            'nama' => 'Instalasi Hydrant',
+            'keterangan' => 'Sistem pemadam kebakaran yang menggunakan air bertekanan',
+            'dokumen_type' => 'docx'
         ],
         [
-            'id' => 32,
-            'singkatan' => 'APD',     // Alat Pelindung Diri
-            'nama' => 'Alat Pelindung Diri dan Alat Penahan Jatuh Perorangan',
-            'keterangan' => 'Layanan terkait APD dan alat penahan jatuh',
-            'status' => 'inactive'
-        ],
-        [
-            'id' => 34,
-            'singkatan' => 'PTP',
-            'nama' => 'Pesawat Tenaga dan Produksi',
-            'keterangan' => 'Layanan terkait mesin tenaga dan peralatan produksi',
-            'status' => 'active'
-        ],
-        [
-            'id' => 35,
-            'singkatan' => 'PUBT',
-            'nama' => 'Pesawat Uap, Bejana Tekanan dan Tangki Timbun',
-            'keterangan' => 'Layanan terkait peralatan bertekanan dan tangki penyimpanan',
-            'status' => 'active'
-        ],
-        [
-            'id' => 36,
-            'singkatan' => 'LIE',
-            'nama' => 'Elevator dan Eskalator',
-            'keterangan' => 'Layanan terkait lift dan eskalator',
-            'status' => 'active'
-        ],
-        [
-            'id' => 66,
-            'singkatan' => 'RTL',     // ReTester LPG
-            'nama' => 'Retester Tabung LPG',
-            'keterangan' => 'Layanan pengujian ulang tabung LPG',
-            'status' => 'inactive'
+            'id' => 16,
+            'service_id' => 6, // IPK - Sarana Proteksi Kebakaran
+            'nama' => 'Alarm Kebakaran Otomatik',
+            'keterangan' => 'Sistem deteksi dan peringatan kebakaran yang bekerja secara otomatis',
+            'dokumen_type' => 'docx'
         ]
     ];
 

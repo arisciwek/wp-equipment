@@ -39,15 +39,28 @@ class GroupModel {
         }
     }
 
-    /**
-     * Dapatkan data untuk DataTable
-     */
-    public function getDataTableData(int $start, int $length, string $search, string $orderBy, string $orderDir): array {
-    // Query dasar - Perbaiki syntax SELECT dengan menambahkan prefix tabel
+/**
+ * Dapatkan data untuk DataTable dengan perbaikan perhitungan filtered records
+ * 
+ * @param int $start Posisi awal data
+ * @param int $length Jumlah data per halaman
+ * @param string $search Kata kunci pencarian
+ * @param string $orderBy Kolom untuk pengurutan
+ * @param string $orderDir Arah pengurutan (ASC/DESC)
+ * @param int|null $service_id Filter berdasarkan service ID (opsional)
+ * @return array Data, total, dan jumlah filtered
+ */
+public function getDataTableData(int $start, int $length, string $search, string $orderBy, string $orderDir, ?int $service_id = null): array {
+    // Query dasar - Dengan prefix tabel yang jelas
     $select = "SELECT g.*, s.nama as service_nama";
     $from = " FROM {$this->table_name} g";
     $join = " LEFT JOIN {$this->wpdb->prefix}app_services s ON g.service_id = s.id";
     $where = " WHERE 1=1";
+
+    // Tambahkan filter service_id jika ada
+    if ($service_id) {
+        $where .= $this->wpdb->prepare(" AND g.service_id = %d", $service_id);
+    }
 
     // Tambah kondisi pencarian
     if (!empty($search)) {
@@ -73,19 +86,25 @@ class GroupModel {
     // Tambah limit
     $limit = $this->wpdb->prepare(" LIMIT %d, %d", $start, $length);
 
-    // Execute query dengan SQL_CALC_FOUND_ROWS
-    // Perbaiki syntax dengan menghapus substr dan langsung menggunakan SELECT
+    // Hitung total records (tanpa filter)
+    $total_query = "SELECT COUNT(*) FROM {$this->table_name} g";
+    if ($service_id) {
+        $total_query .= $this->wpdb->prepare(" WHERE g.service_id = %d", $service_id);
+    }
+    $total = (int) $this->wpdb->get_var($total_query);
+
+    // Hitung total filtered records (dengan filter search)
+    $filtered_query = "SELECT COUNT(*) FROM {$this->table_name} g" . $join . $where;
+    $filtered = (int) $this->wpdb->get_var($filtered_query);
+
+    // Execute query untuk data
     $sql = $select . $from . $join . $where . $order . $limit;
     $results = $this->wpdb->get_results($sql);
 
-    // Get total dan filtered counts
-    $total = $this->wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
-    $filtered = $this->wpdb->get_var("SELECT FOUND_ROWS()");
-
     return [
         'data' => $results,
-        'total' => (int) $total,
-        'filtered' => (int) $filtered
+        'total' => $total,
+        'filtered' => $filtered
     ];
 }
 

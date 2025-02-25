@@ -37,7 +37,7 @@ class CategoriesDB {
             sort_order int NOT NULL DEFAULT 0,
             unit varchar(50) NULL,
             pnbp decimal(10,2) NULL,
-            status enum('active','inactive') DEFAULT 'active',
+            status enum('active','inactive') DEFAULT 'inactive',
             created_by bigint(20) NOT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
