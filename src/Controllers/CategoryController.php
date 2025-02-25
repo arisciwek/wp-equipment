@@ -499,6 +499,8 @@ class CategoryController {
 	        // Cache response untuk optimasi
 	        $cache_key = "category_details_{$id}";
 	        wp_cache_set($cache_key, $response_data, '', 300);
+			
+			error_log('wp_using_ext_object_cache: ' . wp_using_ext_object_cache());
 
 	        wp_send_json_success($response_data);
 
