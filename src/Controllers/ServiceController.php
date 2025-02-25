@@ -104,16 +104,8 @@ class ServiceController {
 
     public function handleDataTableRequest() {
         try {
-            // Debug incoming request
-            error_log('Service DataTable Request: ' . print_r($_POST, true));
-            
-            // Debug nonce
-            error_log('Nonce from request: ' . $_POST['nonce']);
-            error_log('Expected nonce: ' . wp_create_nonce('wp_equipment_nonce'));
-
             // Cek nonce validation
             $nonce_check = check_ajax_referer('wp_equipment_nonce', 'nonce', false);
-            error_log('Nonce check result: ' . ($nonce_check ? 'valid' : 'invalid'));
 
             if (!$nonce_check) {
                 wp_send_json_error([
@@ -168,8 +160,6 @@ class ServiceController {
 
                 $result = $this->model->getDataTableData($start, $length, $search, $orderBy, $orderDir);
     
-                error_log('Query result: ' . print_r($result, true));
-
                 if (!$result) {
                     throw new \Exception('No data returned from model');
                 }
