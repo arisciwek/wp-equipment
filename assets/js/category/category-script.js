@@ -175,7 +175,6 @@
        },
 
         handleHashChange() {
-            console.log('Hash changed to:', window.location.hash); // Debug 4
             const hash = window.location.hash;
             if (!hash) {
                 this.closePanel();
@@ -189,8 +188,6 @@
                 $('.nav-tab').removeClass('nav-tab-active');
                 $('.nav-tab[data-tab="category-details"]').addClass('nav-tab-active');
                 
-                console.log('Get category data for ID:', id); // Debug 5
-
                 this.loadCategoryData(id);
             }
         },
@@ -201,9 +198,7 @@
             this.isLoading = true;
             this.showLoading();
         
-            try {
-                console.log('Loading category data for ID:', id);
-        
+            try {       
                 const response = await $.ajax({
                     url: wpEquipmentData.ajaxUrl,
                     type: 'POST',
@@ -213,8 +208,6 @@
                         nonce: wpEquipmentData.nonce
                     }
                 });
-        
-                console.log('Category data response:', response);
         
                 if (response.success && response.data) {
                     // Update URL hash tanpa reload
@@ -256,9 +249,7 @@
             console.error('Invalid category data:', data);
             return;
         }
-    
-        console.log('Displaying category data:', data);
-    
+        
         try {
             // PENTING: Tampilkan panel terlebih dahulu
             this.components.container.addClass('with-right-panel');
@@ -698,7 +689,6 @@
         const responseData = localStorage.getItem('category_access_response');
         
         if (lastCheckedId) {
-            console.log('Last checked category ID:', lastCheckedId);
             if (errorData) {
                 console.log('Error data:', JSON.parse(errorData));
             }
