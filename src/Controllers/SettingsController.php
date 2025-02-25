@@ -267,10 +267,10 @@ class SettingsController {
         // Define allowed tabs and their templates
         $allowed_tabs = [
             'general' => 'tab-general.php',
+            'cache' => 'tab-cache-diagnostics.php',
             'permissions' => 'tab-permissions.php',
             'demo-data' => 'tab-demo-data.php'
         ];
-        
         // Validate tab exists
         if (!isset($allowed_tabs[$tab])) {
             $tab = 'general';
