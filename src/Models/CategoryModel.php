@@ -206,26 +206,13 @@ class CategoryModel {
     public function getDataTableData(int $start, int $length, string $search, string $orderColumn, string $orderDir): array {
         global $wpdb;
 
-        // Debug info
-        //error_log("=== Start Category Model Query ===");
-        //error_log("Parameters received:");
-        /*
-        error_log(print_r([
-            'start' => $start,
-            'length' => $length,
-            'search' => $search,
-            'orderColumn' => $orderColumn,
-            'orderDir' => $orderDir
-        ], true));
-        */
-
         // Base query parts
         $select = "SELECT SQL_CALC_FOUND_ROWS c.*, 
                          p.name as parent_name,
                          p.code as parent_code";
         $from = " FROM {$this->table} c";
         $join = " LEFT JOIN {$this->table} p ON c.parent_id = p.id";
-        $where = " WHERE 1=1";
+        $where = " WHERE c.status = 'active'"; // Menambahkan filter untuk status active
 
         // Add search if provided
         if (!empty($search)) {

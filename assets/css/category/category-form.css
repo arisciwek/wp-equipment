@@ -51,14 +51,14 @@
 }
 
 /* Field width adjustments */
-.form-group.info-dasar[data-field="code"] {
-    flex: 0 0 12%;
-    min-width: 20px;
+.form-row .form-group.info-dasar[data-field="code"] {
+    flex: 0 0 18%;
+    min-width: 40px;
 }
 
-.form-group.info-dasar[data-field="name"] {
-    flex: 0 0 85%;
-    min-width: 200px;
+.form-row .form-group.info-dasar[data-field="name"] {
+    flex: 0 0 79%;
+    min-width: 180px;
 }
 
 /* Remove margin since we're using gap */

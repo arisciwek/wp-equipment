@@ -47,8 +47,8 @@ class WP_Equipment_Dependencies {
 
             $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
             switch ($current_tab) {
-                case 'permission':
-                    wp_enqueue_style('wp-equipment-permission-tab', WP_EQUIPMENT_URL . 'assets/css/settings/permission-tab-style.css', [], $this->version);
+                case 'permissions':
+                    wp_enqueue_style('wp-equipment-permission-tab', WP_EQUIPMENT_URL . 'assets/css/settings/permissions-tab-style.css', [], $this->version);
                     break;
                 case 'general':
                     wp_enqueue_style('wp-equipment-general-tab', WP_EQUIPMENT_URL . 'assets/css/settings/general-tab-style.css', [], $this->version);
@@ -118,11 +118,13 @@ class WP_Equipment_Dependencies {
         );
 
         // Tambahkan Service styles
+        /*
         wp_enqueue_style('wp-equipment-service', 
             WP_EQUIPMENT_URL . 'assets/css/category/service-style.css',
             [], 
             $this->version
         );
+        */
 
     }
 
@@ -132,6 +134,8 @@ class WP_Equipment_Dependencies {
         $screen = get_current_screen();
         if (!$screen) return;
 
+        error_log("screen ID: " . $screen->id);
+
         // Settings page scripts
         if ($screen->id === 'wp-equipment_page_wp-equipment-settings') {
             wp_enqueue_script('wp-equipment-toast', WP_EQUIPMENT_URL . 'assets/js/components/toast.js', ['jquery'], $this->version, true);
@@ -139,19 +143,20 @@ class WP_Equipment_Dependencies {
             wp_enqueue_script('wp-equipment-settings', WP_EQUIPMENT_URL . 'assets/js/settings/settings-script.js', ['jquery', 'wp-equipment-toast'], $this->version, true);
             
             $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
+            error_log("current_tab: " . $current_tab);
+
             switch ($current_tab) {
-                case 'permission':
-                    wp_enqueue_style('wp-equipment-permission-tab', WP_EQUIPMENT_URL . 'assets/js/settings/permission-tab-script.js', [], $this->version);
+                case 'permissions':
+                    wp_enqueue_script('wp-equipment-permission-tab', WP_EQUIPMENT_URL . 'assets/js/settings/permissions-tab-script.js', [], $this->version);
                     break;
                 case 'general':
-                    wp_enqueue_style('wp-equipment-general-tab', WP_EQUIPMENT_URL . 'assets/js/settings/general-tab-script.js', [], $this->version);
+                    wp_enqueue_script('wp-equipment-general-tab', WP_EQUIPMENT_URL . 'assets/js/settings/general-tab-script.js', [], $this->version);
                     break;
                 case 'demo-data':
                     wp_enqueue_script('wp-equipment-demo-data-tab', WP_EQUIPMENT_URL . 'assets/js/settings/equipment-demo-data-tab-script.js', ['jquery'], $this->version);
                     break;
             }
             return;
-
         }
 
         // Equipment and Licence pages scripts
@@ -191,7 +196,6 @@ class WP_Equipment_Dependencies {
                 'nonce' => $equipment_nonce,
                 'debug' => true
             ]);
-
 
             // Licence scripts
             wp_enqueue_script('licence-datatable', WP_EQUIPMENT_URL . 'assets/js/licence/licence-datatable.js', ['jquery', 'datatables', 'equipment-toast', 'equipment'], $this->version, true);
@@ -272,8 +276,6 @@ class WP_Equipment_Dependencies {
                 ]
             ]);
         }
-
-
     }
 
     public function enqueue_select_handler() {
@@ -298,6 +300,17 @@ class WP_Equipment_Dependencies {
                 'loading' => __('Memuat...', 'wp-equipment')
             ]
         ]);
+    }
+    
+    // Tambahkan fungsi ini di class WP_Equipment_Dependencies
+    private function enqueue_confirmation_modal() {
+        // Cek apakah sudah dimuat sebelumnya
+        if (wp_script_is('confirmation-modal', 'enqueued')) {
+            return;
+        }
+        
+        wp_enqueue_style('wp-equipment-modal', WP_EQUIPMENT_URL . 'assets/css/components/confirmation-modal.css', [], $this->version);
+        wp_enqueue_script('confirmation-modal', WP_EQUIPMENT_URL . 'assets/js/components/confirmation-modal.js', ['jquery'], $this->version, true);
     }
 
 }

@@ -29,7 +29,10 @@ class SettingsController {
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_init', [$this, 'register_development_settings']);
         
-        // Register AJAX handlers with correct action names
+        add_action('wp_ajax_reset_permissions', [$this, 'handle_reset_permissions']);
+
+        // Endpoint untuk update permissions (baru)
+        add_action('wp_ajax_update_wp_equipment_permissions', [$this, 'handle_update_permissions']);
 
         // Handled in SettingsController.php
         add_action('wp_ajax_generate_demo_data', [$this, 'handle_generate_demo_data']);
@@ -42,6 +45,123 @@ class SettingsController {
         $this->init();
     }
 
+    public function handle_reset_permissions() {
+        try {
+            // Verify nonce
+            check_ajax_referer('wp_equipment_reset_permissions', 'nonce');
+    
+            // Check permissions
+            if (!current_user_can('manage_options')) {
+                throw new \Exception(__('You do not have permission to perform this action.', 'wp-equipment'));
+            }
+    
+            // Get current version
+            $current_version = WP_EQUIPMENT_VERSION;
+            $stored_version = get_option('wp_equipment_perm_version', '0.0.0');
+            $new_capabilities_added = false;
+            
+            // Reset permissions using PermissionModel
+            $permission_model = new \WPEquipment\Models\Settings\PermissionModel();
+            $success = $permission_model->resetToDefault();
+    
+            if (!$success) {
+                throw new \Exception(__('Failed to reset permissions.', 'wp-equipment'));
+            }
+            
+            // Check if new version
+            if (version_compare($current_version, $stored_version, '>')) {
+                $new_capabilities_added = true;
+            }
+    
+            // Create appropriate message
+            $message = $new_capabilities_added 
+                ? __('Permissions have been reset to default settings and new capabilities have been activated.', 'wp-equipment')
+                : __('Permissions have been reset to default settings.', 'wp-equipment');
+    
+            wp_send_json_success([
+                'message' => $message,
+                'new_capabilities' => $new_capabilities_added,
+                'reload' => true
+            ]);
+    
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Handler untuk permintaan AJAX update_wp_equipment_permissions
+     * Fungsi ini menangani pembaruan matrix permission dari form settings
+     * 
+     * @return void
+     */
+    public function handle_update_permissions() {
+        try {
+            // Verifikasi nonce untuk keamanan
+            check_ajax_referer('wp_equipment_permissions_nonce', 'security');
+            
+            // Cek apakah pengguna memiliki izin untuk mengubah pengaturan
+            if (!current_user_can('manage_options')) {
+                throw new \Exception(__('Anda tidak memiliki izin untuk melakukan tindakan ini.', 'wp-equipment'));
+            }
+            
+            // Ambil data dari request
+            $permissions = isset($_POST['permissions']) ? $_POST['permissions'] : array();
+            $current_subtab = isset($_POST['current_subtab']) ? sanitize_text_field($_POST['current_subtab']) : '';
+            
+            // Validasi data permissions
+            if (empty($permissions) || !is_array($permissions)) {
+                throw new \Exception(__('Data hak akses tidak valid.', 'wp-equipment'));
+            }
+            
+            // Sanitasi data permissions
+            $sanitized_permissions = array();
+            foreach ($permissions as $role => $capabilities) {
+                $role = sanitize_text_field($role);
+                $sanitized_permissions[$role] = array();
+                
+                if (is_array($capabilities)) {
+                    foreach ($capabilities as $cap => $value) {
+                        $cap = sanitize_text_field($cap);
+                        $sanitized_permissions[$role][$cap] = (int)!!$value; // Memastikan nilai 0 atau 1
+                    }
+                }
+            }
+            
+            // Update permissions menggunakan PermissionModel
+            $permission_model = new \WPEquipment\Models\Settings\PermissionModel();
+            $success = $permission_model->updatePermissions($sanitized_permissions);
+            
+            if (!$success) {
+                throw new \Exception(__('Gagal memperbarui hak akses.', 'wp-equipment'));
+            }
+            
+            // Log aktivitas admin jika berhasil
+            $current_user = wp_get_current_user();
+            $log_message = sprintf(
+                __('Hak akses diperbarui oleh %s pada %s', 'wp-equipment'),
+                $current_user->user_login,
+                current_time('mysql')
+            );
+            error_log($log_message);
+            
+            // Kirim respons sukses
+            wp_send_json_success([
+                'message' => __('Hak akses berhasil diperbarui.', 'wp-equipment'),
+                'updated' => true,
+                'current_subtab' => $current_subtab,
+                'reload' => false
+            ]);
+            
+        } catch (\Exception $e) {
+            // Kirim respons error
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
     /**
      * Get the appropriate generator class based on data type
      */

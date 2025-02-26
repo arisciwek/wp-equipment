@@ -44,14 +44,14 @@ defined('ABSPATH') || exit;
 
 <div id="edit-category-modal" class="modal-overlay" style="display: none;">
     <div class="modal-container">
-        <!-- Header Modal -->
-        <div class="modal-header">
-            <h3><?php _e('Edit Kategori', 'wp-equipment'); ?> <span id="edit-category-title"></span></h3>
-            <button type="button" class="modal-close">&times;</button>
-        </div>
-
         <!-- Form Utama -->
         <form id="edit-category-form" method="post">
+                    <!-- Header Modal -->
+            <div class="modal-header">
+                <h3><?php _e('Edit Kategori', 'wp-equipment'); ?> <span id="edit-category-title"></span></h3>
+                <button type="button" class="modal-close">&times;</button>
+            </div>
+
             <!-- Hidden Fields -->
             <input type="hidden" id="edit-category-id" name="id">
             

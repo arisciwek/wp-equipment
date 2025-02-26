@@ -42,7 +42,6 @@
  * - Added core modal functionality
  * - Added accessibility features
  */
-
 const WIModal = {
     modal: null,
     options: null,

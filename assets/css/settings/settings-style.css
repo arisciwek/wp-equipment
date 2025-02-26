@@ -59,90 +59,6 @@
     color: #666;
 }
 
-/* Permission Matrix */
-.wp-equipment-permissions-wrapper {
-    margin: 20px 0;
-}
-
-.capability-group {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    margin-bottom: 20px;
-    border-radius: 3px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
-}
-
-.group-title {
-    margin: 0;
-    padding: 15px;
-    border-bottom: 1px solid #c3c4c7;
-    background: #f6f7f7;
-}
-
-.permissions-matrix {
-    margin: 20px 20px 0;
-    background: #fff;
-    border: 1px solid #ccd0d4;
-    table-layout: fixed;
-}
-
-.permissions-matrix th,
-.permissions-matrix td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ccd0d4;
-    vertical-align: top;
-    width: 27px;
-}
-
-.permissions-matrix th {
-    background: #f5f5f5;
-    font-weight: 600;
-    position: relative;
-    padding-bottom: 30px;
-}
-
-.permissions-matrix .column-role {
-    width: 150px;
-}
-
-.permissions-matrix .column-permission {
-    width: 27px;
-    text-align: center;
-}
-
-.permissions-matrix input[type="checkbox"] {
-    margin: 0;
-}
-
-.permissions-matrix .tooltip-icon {
-    display: block;
-    clear: both;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-@media screen and (max-width: 782px) {
-    .permissions-matrix .column-permission {
-        width: 40px;
-    }
-    
-    .permissions-matrix th {
-        padding-bottom: 35px;
-    }
-}
-
-.column-role {
-    width: 200px;
-    background: #f6f7f7;
-}
-
-.column-capability {
-    text-align: center;
-    width: auto;
-}
-
 /* Dependency Indicator */
 .dependency-indicator {
     display: inline-block;
@@ -208,3 +124,112 @@
     }
 }
 
+/* ========= MODAL SYSTEM ========= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 160000;
+    overflow-y: auto;
+    display: none;
+}
+
+.modal-overlay.active {
+    display: block;
+}
+
+.modal {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column; /* Memastikan layout vertikal */
+}
+
+.modal-header {
+    position: sticky;
+    top: 0;
+    padding: 15px 20px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-icon {
+    font-size: 24px;
+    color: #d63638;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto; /* Scroll jika konten terlalu panjang */
+    flex: 1; /* Biarkan konten mengambil ruang yang tersedia */
+}
+
+.modal-footer {
+    position: sticky;
+    bottom: 0;
+    padding: 15px 20px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    z-index: 1;
+    margin-top: auto; /* Mendorong footer ke bawah */
+}
+
+/* Modal Close Button */
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    padding: 5px;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-close:hover {
+    color: #d63638;
+}
+
+/* Responsive Modal */
+@media screen and (max-width: 782px) {
+    .modal {
+        width: 95%;
+        margin: 20px auto;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .modal {
+        width: 100%;
+        margin: 10px auto;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 10px 15px;
+    }
+}

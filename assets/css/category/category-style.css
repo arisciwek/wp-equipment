@@ -491,6 +491,8 @@ div#customers-table_length select {
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column; /* Memastikan layout vertikal */
 }
 
 .modal-header {
@@ -506,8 +508,11 @@ div#customers-table_length select {
     z-index: 1;
 }
 
+
 .modal-content {
     padding: 20px;
+    overflow-y: auto; /* Scroll jika konten terlalu panjang */
+    flex: 1; /* Biarkan konten mengambil ruang yang tersedia */
 }
 
 .modal-footer {
@@ -521,6 +526,7 @@ div#customers-table_length select {
     justify-content: flex-end;
     gap: 10px;
     z-index: 1;
+    margin-top: auto; /* Mendorong footer ke bawah */
 }
 
 /* Modal Close Button */
